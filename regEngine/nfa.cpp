@@ -148,7 +148,10 @@ void nfa::testNFA(QString str="")
                 }
             }
         }
-        closures.push_back(closure);
+        if(!closure.isEmpty())//若下一状态集为空，则当前状态集就是一个终态或者是死状态
+        {
+            closures.push_back(closure);
+        }
     }
 
     int index=0;
@@ -165,7 +168,7 @@ void nfa::testNFA(QString str="")
         index++;
     }
 
-    if(closures.back().contains(accept))
+    if(!closures.isEmpty() && closures.back().contains(accept))
     {
         qDebug() << "accept!";
     }

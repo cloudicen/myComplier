@@ -130,6 +130,15 @@ private:
 public:
     regTree(const QString& _regExpr):regExpr(_regExpr){};
 
+    ~regTree()
+    {
+        foreach(auto node,nodes)
+        {
+            delete node;
+        }
+        root = nullptr;
+    }
+
     /**
      * @brief getRootNode 获得根节点指针
      * @return

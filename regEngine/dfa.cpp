@@ -13,12 +13,26 @@ void dfa::subsetConstruct()
         for (auto c = alphabet.begin(); c != alphabet.end(); ++c)
         {
             QSet<int> v = getNextClosure(q, *c);
-            addEdge(q, v, *c);
-            qDebug()  << q << '(' << QString('A'+getNode(q)->num) << ')' << "----" << *c << "---->" << v << "....." << QString('A'+getNode(v)->num);
-            if (needNewNode == true)
+            if(!v.isEmpty())//下一状态集不为空
             {
-                worklist.push_back(v);
-                needNewNode = false;
+                addEdge(q, v, *c);
+                qDebug()  << q << '(' << QString('A'+getNode(q)->num) << ')' << "----" << *c << "---->" << v << "....." << QString('A'+getNode(v)->num);
+                if (needNewNode == true)
+                {
+                    worklist.push_back(v);
+                    needNewNode = false;
+                }
+            }
+            else//如果下一状态集为空，则当前状态已经是终态或者是死状态
+            {
+                if(q.contains(nfaAccept))
+                {
+                    //终态
+                }
+                else
+                {
+                    //死状态处理，这里忽略死状态转换
+                }
             }
         }
     }

@@ -5,7 +5,7 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-    regTree* tree= new regTree("T");
+    regTree* tree= new regTree("T*");
     //regTree tree("w.h.i.l.e.\\(.\\d*.\\).{.\\s*.}");
     //regTree tree("a|b*");形如这样的前缀冲突模式目前无法工作，实际使用的时候应转换成多个符号，即拆分成多个dfa引擎分别匹配后再进行决定
     if(tree->analyze())
