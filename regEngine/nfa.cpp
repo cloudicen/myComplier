@@ -152,6 +152,17 @@ void nfa::testNFA(QString str="")
         {
             closures.push_back(closure);
         }
+        else
+        {
+            if(closures.back().contains(accept))
+            {
+            }
+            else
+            {
+                //死状态，不可能继续匹配
+                break;
+            }
+        }
     }
 
     int index=0;

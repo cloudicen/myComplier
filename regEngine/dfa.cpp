@@ -210,16 +210,23 @@ void dfa::testDFA(QString str)
     foreach(QChar ch,str)
     {
         auto edge=node->edges;
+        bool hasEdge = false;
         while(edge != nullptr)
         {
             if(edge->accept(ch))
             {
                 qDebug() << QChar('A'+node->num) << "----" << ch << "---->" << QChar('A'+edge->to->num);
                 node = edge->to;
+                hasEdge = true;
                 break;
             }
             edge = edge->next;
         }
+        if(!hasEdge)//对当前输入无状态转移边，直接结束循环
+        {
+            break;
+        }
+
     }
     qDebug() << (node->isAccept() ? "ACCEPT" : "REJECT");
 }
