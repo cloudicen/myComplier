@@ -2,80 +2,87 @@
 
 QPair<QSet<int>, QSet<int> > mdfa::split(QSet<int> nodeGroup)
 {
-    if(nodeGroup.size()<=1)
+    for (auto c = alphabet.begin(); c != alphabet.end(); ++c)// 遍历字符表
     {
-        qDebug() << nodeGroup << "can't spilt";
-        return qMakePair(nodeGroup,nodeGroup);
-    }
-    auto source = nodeGroup;
-    for (auto c = alphabet.begin(); c != alphabet.end(); ++c)
-    {
-        QSet<int> s1, s2;
-        auto edgeGroup = dfaEdges.values(*c);
-        foreach(auto edge,edgeGroup)
+        QSet<int> s1, s2;// 存储新的分组
+        foreach(auto node,nodeGroup)// 遍历组内节点
         {
-            auto from = edge->from->num;
-            auto to = edge->to->num;
-            foreach(auto node,nodeGroup)
+            for(auto edge=dfaNodes.value(node)->edges;edge!=nullptr;edge=edge->next)// 遍历该节点的边
             {
-                if(node == from)
+                if(edge->info == *c)// 找出所有接受当前字符的边
                 {
+                    auto from = edge->from->num;
+                    auto to = edge->to->num;
                     qDebug() << "CHECK EDGE:" << from << "----" << *c << "----->" << to;
-                    //不可区分，保留分组
-                    if(nodeGroup.contains(to))
+                    if(nodeGroup.contains(to))// 当前节点指向当前组，放入s1
                     {
                         s1.insert(from);
                     }
-                    else
+                    else// 当前节点指向其他组，放入s2
                     {
                         s2.insert(from);
                     }
+
                 }
             }
         }
-        //存在不可区分的分组，直接返回，否则测试下一组符号
-        if (s1 != nodeGroup)
+        if (!s2.isEmpty() && !s1.isEmpty())//如果s1,s2均不空，则表明当前分组可以进一步细分，直接返回分组结果
         {
             qDebug() << nodeGroup << "can spilt to:" << s1 << s2;
             return qMakePair(s1,s2);
         }
     }
+    //遍历完所有字符，均不可区分
     qDebug() << nodeGroup << "can't spilt";
-    return qMakePair(nodeGroup,nodeGroup);
+    return qMakePair(QSet<int>(),QSet<int>());
 }
 
 void mdfa::hopcroft()
 {
-    QSet<int> accept, notaccepet;
+    QSet<int> accept, notaccept;
     foreach(auto node,dfaNodes)
     {
         if (node->isAccept())
             accept.insert(node->num);
         else
-            notaccepet.insert(node->num);
+            notaccept.insert(node->num);
     }
-    T.insert(accept);
-    T.insert(notaccepet);
-    qDebug() << "origin:" << T;
-    while (P != T)
+
+    QSet<QSet<int>> currentGroup={
+        accept,
+        notaccept
+    };
+    qDebug() << "origin group:" << currentGroup;
+    while (!currentGroup.isEmpty())
     {
-        P = T;
-        T.clear();
-        qDebug() << P;
-        foreach(auto subGroup,P)
+        auto tempSet = currentGroup;
+        currentGroup.clear();
+        foreach(auto subGroup,tempSet)
         {
-            auto result = split(subGroup);
-            if(!result.first.isEmpty())
+            if(subGroup.size() > 1)//节点有多个元素，尝试分割
             {
-                T.insert(result.first);
+                auto result = split(subGroup);
+                if(!result.first.isEmpty() && !result.second.isEmpty())//节点可分
+                {
+                    currentGroup.insert(result.first);
+                    currentGroup.insert(result.second);
+                }
+                else// 节点不可再分，加入最终组集合
+                {
+                    finalGroups.insert(subGroup);
+                }
             }
-            if(!result.second.isEmpty())
+            else// 节点组为空或者只有一个元素，不可再分
             {
-                T.insert(result.second);
+                qDebug() << subGroup << "can't spilt";
+                if(!subGroup.isEmpty())// 将非空组加入最终组集合
+                {
+                    finalGroups.insert(subGroup);
+                }
             }
         }
     }
-    qDebug() << "final:" << T;
+    qDebug() << "final group:" << finalGroups;
 }
 
 void mdfa::addEdge(int from, int to, QChar ch)
@@ -90,7 +97,7 @@ void mdfa::addEdge(int from, int to, QChar ch)
 void mdfa::parseMDFA()
 {
     hopcroft();
-    foreach(auto group,T)
+    foreach(auto group,finalGroups)
     {
         int currentNode = nodeNumber++;
         auto newNode = new dfaNode(currentNode,group);

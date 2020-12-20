@@ -24,6 +24,7 @@ void nfa::Thompson(const regNode *subTree)
     {
         Thompson(subTree->children[0]);
         int oldStart = start;
+        nodeNumber--;
         int oldAccept = accept;
         Thompson(subTree->children[1]);
         addEdge(oldAccept, start, nfaEdge::EPS);
@@ -34,7 +35,6 @@ void nfa::Thompson(const regNode *subTree)
         Thompson(subTree->children[0]);
         addEdge(accept, start, nfaEdge::EPS);
         int from = nodeNumber++;
-        //这里为了整体逻辑正确，多添加了一个eps边，后续转dfa的时候会被优化掉，
         addEdge(from, start, nfaEdge::EPS);
         int to = nodeNumber++;
         addEdge(from, to, nfaEdge::EPS);
