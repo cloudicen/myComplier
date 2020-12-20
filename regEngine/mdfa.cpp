@@ -151,26 +151,29 @@ void mdfa::parseMDFA()
 void mdfa::testMDFA(QString str)
 {
     auto node = nodes[start];
+    bool hasEdge = false;
     foreach(QChar ch,str)
     {
         auto edge=node->edges;
+        hasEdge = false;
         while(edge != nullptr)
         {
             if(edge->accept(ch))
             {
                 qDebug() << node->num << "----" << ch << "---->" << edge->to->num;
                 node = edge->to;
+                hasEdge = true;
                 break;
             }
             edge = edge->next;
         }
-        if(node->isDead())//对当前输入无状态转移边，直接结束循环
+        if(node->isDead() || !hasEdge)//对当前输入无状态转移边，直接结束循环
         {
             qDebug() << "mdfa process terminate.";
             break;
         }
     }
-    qDebug() << (node->isAccept() ? "ACCEPT" : "REJECT");
+    qDebug() << (node->isAccept()&&hasEdge ? "ACCEPT" : "REJECT");
 }
 
 void mdfa::print()

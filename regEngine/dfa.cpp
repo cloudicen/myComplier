@@ -185,10 +185,11 @@ void dfa::parseDFA()
 void dfa::testDFA(QString str)
 {
     auto node = nodes[start];
+    bool hasEdge = false;
     foreach(QChar ch,str)
     {
         auto edge=node->edges;
-        bool hasEdge = false;
+        hasEdge = false;
         while(edge != nullptr)
         {
             if(edge->accept(ch))
@@ -200,13 +201,13 @@ void dfa::testDFA(QString str)
             }
             edge = edge->next;
         }
-        if(node->isDead())//对当前输入无状态转移边，直接结束循环
+        if(node->isDead() || !hasEdge)//对当前输入无状态转移边，直接结束循环
         {
             qDebug() << "dfa process terminate.";
             break;
         }
     }
-    qDebug() << (node->isAccept() ? "ACCEPT" : "REJECT");
+    qDebug() << (node->isAccept()&&hasEdge ? "ACCEPT" : "REJECT");
 }
 
 void dfa::toPrintable()
