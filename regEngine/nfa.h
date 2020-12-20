@@ -77,6 +77,9 @@ public:
         return valid;
     }
 
+    QSet<int> getEPSclosure(QSet<int> start);// 求初态epsilon闭包
+    QSet<int> getSMove(QSet<int> current,QChar ch);// 求epsilon闭包
+
 };
 
 #endif // NFA_H

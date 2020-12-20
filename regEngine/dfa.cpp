@@ -2,36 +2,26 @@
 
 void dfa::subsetConstruct()
 {
-    auto q0 = getEPSclosure({nfaStart});
-    qDebug() << "Start State closure" << q0;
+    auto beginStates = getEPSclosure({nfaStart});
+    qDebug() << "Start State closure" << beginStates;
     QVector<QSet<int>> worklist;
-    worklist.push_back(q0);
+    worklist.push_back(beginStates);
     while (!worklist.empty())
     {
-        auto q = worklist.front();
+        auto currentStates = worklist.front();
         worklist.pop_front();
-        for (auto c = alphabet.begin(); c != alphabet.end(); ++c)
+        foreach(auto ch,alphabet)
         {
-            QSet<int> v = getNextClosure(q, *c);
-            if(!v.isEmpty())//下一状态集不为空
+            QSet<int> smove = getSMove(currentStates,ch);
+            auto nextState = getEPSclosure(smove);
+            //如果下一状态集为空，则当前状态已经是终态或者是死状态,这里直接引入死状态
             {
-                addEdge(q, v, *c);
-                qDebug()  << q << '(' << QString('A'+getNode(q)->num) << ')' << "----" << *c << "---->" << v << "....." << QString('A'+getNode(v)->num);
+                addEdge(currentStates, nextState, ch);
+                qDebug()  << currentStates << '(' << QString('A'+getNode(currentStates)->num) << ')' << "----" << ch << "---->" << nextState << "....." << QString('A'+getNode(nextState)->num);
                 if (needNewNode == true)
                 {
-                    worklist.push_back(v);
+                    worklist.push_back(nextState);
                     needNewNode = false;
-                }
-            }
-            else//如果下一状态集为空，则当前状态已经是终态或者是死状态
-            {
-                if(q.contains(nfaAccept))
-                {
-                    //终态
-                }
-                else
-                {
-                    //死状态处理，这里忽略死状态转换
                 }
             }
         }
@@ -135,8 +125,6 @@ void dfa::parseAlphabet()
 
 QSet<int> dfa::getEPSclosure(QSet<int> start)
 {
-    nfaNode* node = nullptr;
-    nfaEdge* edge = nullptr;
     QSet<int> closure;
     closure = start;
     foreach(auto n,start)
@@ -146,10 +134,9 @@ QSet<int> dfa::getEPSclosure(QSet<int> start)
 
         while (!nextNodes.isEmpty())
         {
-            node = nfaNodes.find(nextNodes.back()).value();
+            auto node = nfaNodes.find(nextNodes.back()).value();
             nextNodes.pop_back();
-            edge = node->edges;
-            while(edge != nullptr)
+            for(auto edge=node->edges;edge!=nullptr;edge = edge->next)
             {
                 if(edge->isEPS())
                 {
@@ -159,39 +146,26 @@ QSet<int> dfa::getEPSclosure(QSet<int> start)
                         nextNodes.push_back(edge->to->num);
                     }
                 }
-                edge = edge->next;
             }
         }
     }
     return closure;
 }
 
-QSet<int> dfa::getNextClosure(QSet<int> current, QChar ch)
+QSet<int> dfa::getSMove(QSet<int> current, QChar ch)
 {
-    nfaNode* node = nullptr;
-    nfaEdge* edge = nullptr;
     QSet<int> closure;
     foreach(auto n,current)
     {
-        QVector<int> nextNodes;
-        nextNodes.push_back(n);
-        QChar c = ch;
-        while (!nextNodes.isEmpty())
+        auto node = nfaNodes.value(n);
+        for(auto edge=node->edges;edge!=nullptr;edge = edge->next)
         {
-            node = nfaNodes.find(nextNodes.back()).value();
-            nextNodes.pop_back();
-            edge = node->edges;
-            while(edge != nullptr)
+            if(edge->accept(ch))
             {
-               if(edge->accept(c))
+                if(!closure.contains(edge->to->num))
                 {
-                    if(!closure.contains(edge->to->num))
-                    {
-                        closure.insert(edge->to->num);
-                        nextNodes.push_back(edge->to->num);
-                    }
+                    closure.insert(edge->to->num);
                 }
-                edge = edge->next;
             }
         }
     }
@@ -207,6 +181,7 @@ void dfa::parseDFA()
 void dfa::testDFA(QString str)
 {
     auto node = nodes[start];
+    int index = 0;
     foreach(QChar ch,str)
     {
         auto edge=node->edges;
@@ -215,7 +190,7 @@ void dfa::testDFA(QString str)
         {
             if(edge->accept(ch))
             {
-                qDebug() << QChar('A'+node->num) << "----" << ch << "---->" << QChar('A'+edge->to->num);
+                qDebug() << node->num << "----" << ch << "---->" << edge->to->num;
                 node = edge->to;
                 hasEdge = true;
                 break;
@@ -224,11 +199,12 @@ void dfa::testDFA(QString str)
         }
         if(!hasEdge)//对当前输入无状态转移边，直接结束循环
         {
+            qDebug() << "dfa process terminate.";
             break;
         }
-
+        index++;
     }
-    qDebug() << (node->isAccept() ? "ACCEPT" : "REJECT");
+    qDebug() << (node->isAccept()&&index == str.size() ? "ACCEPT" : "REJECT");
 }
 
 void dfa::toPrintable()

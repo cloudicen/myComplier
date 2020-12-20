@@ -5,6 +5,7 @@ void nfa::Thompson(const regNode *subTree)
     auto op = subTree->type;
     if(op == Alternate)
     {
+        qDebug() << "Parse Alternate Node";
         Thompson(subTree->children[0]);
         int start1 = start;
         int accept1 = accept;
@@ -22,19 +23,21 @@ void nfa::Thompson(const regNode *subTree)
     }
     else if(op == Concat)
     {
+        qDebug() << "Parse Concat Node";
         Thompson(subTree->children[0]);
         int oldStart = start;
         nodeNumber--;
-        int oldAccept = accept;
+        //int oldAccept = accept;
         Thompson(subTree->children[1]);
-        addEdge(oldAccept, start, nfaEdge::EPS);
+        //addEdge(oldAccept, start, nfaEdge::EPS);
         start = oldStart;
     }
     else if(op == Closure)
     {
+        qDebug() << "Parse Closure Node";
+        int from = nodeNumber++;
         Thompson(subTree->children[0]);
         addEdge(accept, start, nfaEdge::EPS);
-        int from = nodeNumber++;
         addEdge(from, start, nfaEdge::EPS);
         int to = nodeNumber++;
         addEdge(from, to, nfaEdge::EPS);
@@ -44,6 +47,7 @@ void nfa::Thompson(const regNode *subTree)
     }
     else if(op ==Element)
     {
+        qDebug() << "Parse Element Node";
         int from = nodeNumber++;
         int to = nodeNumber++;
         addEdge(from, to, subTree->info);
@@ -85,107 +89,31 @@ void nfa::parseNFA()
     valid = true;
 }
 
-void nfa::testNFA(QString str="")
+void nfa::testNFA(QString str)
 {
-    nfaNode* node = nullptr;
-    nfaEdge* edge = nullptr;
+    QSet<int> currentStates = getEPSclosure({start});
 
-    QVector<int> nextNodes;
-    nextNodes.push_back(start);
+    qDebug() << "begin state" << currentStates;
 
-    QVector<QSet<int>> closures;
-
-    //EPS closure
-    QSet<int> EPSclosure;
-    EPSclosure.insert(start);
-
-    while (!nextNodes.isEmpty())
+    foreach(auto ch,str)
     {
-        node = getNode(nextNodes.back());
-        nextNodes.pop_back();
-        edge = node->edges;
-        while(edge != nullptr)
+        auto smove = getSMove(currentStates,ch);
+        qDebug() << "smove(" << currentStates << ',' << ch << ')' << "=" << smove;
+        currentStates = getEPSclosure(smove);
+        qDebug() << "next states" << currentStates;
+        if(currentStates.isEmpty())
         {
-            if(edge->isEPS())
-            {
-                if(!EPSclosure.contains(edge->to->num))
-                {
-                    EPSclosure.insert(edge->to->num);
-                    nextNodes.push_back(edge->to->num);
-                }
-            }
-            edge = edge->next;
-        }
-    }
-    closures.push_back(EPSclosure);
-
-    for(int i=0;i<str.length();i++)
-    {
-        nfaNode* node = nullptr;
-        nfaEdge* edge = nullptr;
-        QSet<int> closure;
-        foreach(auto n,closures.back())
-        {
-            QChar ch(str.at(i));
-            QVector<int> nextNodes;
-            nextNodes.push_back(n);
-            while (!nextNodes.isEmpty())
-            {
-                node = getNode(nextNodes.back());
-                nextNodes.pop_back();
-                edge = node->edges;
-                while(edge != nullptr)
-                {
-                    if(edge->accept(ch))
-                    {
-                        if(!closure.contains(edge->to->num))
-                        {
-                            closure.insert(edge->to->num);
-                            nextNodes.push_back(edge->to->num);
-                        }
-                    }
-                    edge = edge->next;
-                }
-            }
-        }
-        if(!closure.isEmpty())//若下一状态集为空，则当前状态集就是一个终态或者是死状态
-        {
-            closures.push_back(closure);
-        }
-        else
-        {
-            if(closures.back().contains(accept))
-            {
-            }
-            else
-            {
-                //死状态，不可能继续匹配
-                break;
-            }
+            break;
         }
     }
 
-    int index=0;
-    foreach(auto c,closures)
+    if(currentStates.contains(accept))
     {
-        if(index == 0)
-        {
-            qDebug() << "EPS closure" << c << "(\'A\')";
-        }
-        else
-        {
-            qDebug() << "smove(" << QChar('A'+index-1) << ',' << str.at(index-1) << ')' << "=" << QChar('A'+index) << c ;
-        }
-        index++;
-    }
-
-    if(!closures.isEmpty() && closures.back().contains(accept))
-    {
-        qDebug() << "ACCEPT!";
+        qDebug() << "ACCEPT";
     }
     else
     {
-        qDebug() << "REJECT!";
+        qDebug() << "REJECT";
     }
 }
 
@@ -222,4 +150,53 @@ void nfa::print()
     }
     std::cout << "|\n";
     std::cout << "------------------------------------------------------\n";
+}
+
+QSet<int> nfa::getEPSclosure(QSet<int> start)
+{
+    QSet<int> closure;
+    closure = start;
+    foreach(auto n,start)
+    {
+        QVector<int> nextNodes;
+        nextNodes.push_back(n);
+
+        while (!nextNodes.isEmpty())
+        {
+            auto node = nodes.find(nextNodes.back()).value();
+            nextNodes.pop_back();
+            for(auto edge=node->edges;edge!=nullptr;edge = edge->next)
+            {
+                if(edge->isEPS())
+                {
+                    if(!closure.contains(edge->to->num))
+                    {
+                        closure.insert(edge->to->num);
+                        nextNodes.push_back(edge->to->num);
+                    }
+                }
+            }
+        }
+    }
+    return closure;
+}
+
+QSet<int> nfa::getSMove(QSet<int> current, QChar ch)
+{
+    QSet<int> closure;
+    foreach(auto n,current)
+    {
+        auto node = nodes.value(n);
+        for(auto edge=node->edges;edge!=nullptr;edge = edge->next)
+        {
+            if(edge->accept(ch))
+            {
+                if(!closure.contains(edge->to->num))
+                {
+                    closure.insert(edge->to->num);
+                }
+            }
+        }
+    }
+    return closure;
 }

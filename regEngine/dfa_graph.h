@@ -25,7 +25,7 @@ public:
      * @param ch
      * @return
      */
-    bool accept(QChar &ch) const
+    bool accept(QChar ch) const
     {
         return ch == info;
     }

@@ -38,53 +38,47 @@ public:
      * @return
      * @note 这里就是通过info来判断接受的字符类型，有很大的自由度
      */
-    bool accept(QChar &ch) const
+    bool accept(QChar ch) const
     {
-        bool isMatch=false;
         if(info == EPS)
         {
-            return true;
+            return ch.isNull();
         }
         else
         {
             if(info == "alpha")
             {
-                isMatch= ch.isLetter();
+                return ch.isLetter();
             }
             else if(info == "digit")
             {
-                isMatch= ch.isDigit();
+                return ch.isDigit();
             }
             else if(info == "space")
             {
-                isMatch= ch.isSpace();
+                return ch.isSpace();
             }
             else if(info == "word")
             {
-                isMatch= ch.isLetterOrNumber() || ch == '_';
+                return ch.isLetterOrNumber() || ch == '_';
             }
             else if(info == "newline")
             {
-                isMatch= ch == '\n';
+                return ch == '\n';
             }
             else if(info == "tab")
             {
-                isMatch= ch == '\t';
+                return ch == '\t';
             }
             else if(info == "return")
             {
-                isMatch= ch == '\r';
+                return ch == '\r';
             }
             else
             {
-                isMatch= ch == info.at(0);
+                return ch == info;
             }
         }
-        if(isMatch)
-        {
-            ch = 0;
-        }
-        return isMatch;
     }
 
 };

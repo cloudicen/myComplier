@@ -2,27 +2,27 @@
 
 QPair<QSet<int>, QSet<int> > mdfa::split(QSet<int> nodeGroup)
 {
-    for (auto c = alphabet.begin(); c != alphabet.end(); ++c)// 遍历字符表
+    foreach(auto ch ,alphabet)// 遍历字符表
     {
         QSet<int> s1, s2;// 存储新的分组
+        auto edges = dfaEdges.values(ch);
         foreach(auto node,nodeGroup)// 遍历组内节点
         {
             for(auto edge=dfaNodes.value(node)->edges;edge!=nullptr;edge=edge->next)// 遍历该节点的边
             {
-                if(edge->info == *c)// 找出所有接受当前字符的边
+                if(edge->accept(ch))// 找出所有接受当前字符的边
                 {
-                    auto from = edge->from->num;
                     auto to = edge->to->num;
-                    qDebug() << "CHECK EDGE:" << from << "----" << *c << "----->" << to;
                     if(nodeGroup.contains(to))// 当前节点指向当前组，放入s1
                     {
-                        s1.insert(from);
+                        qDebug() << "CHECK EDGE:" << node << "----" << ch << "----->" << to << " => [current group]";
+                        s1.insert(node);
                     }
                     else// 当前节点指向其他组，放入s2
                     {
-                        s2.insert(from);
+                        qDebug() << "CHECK EDGE:" << node << "----" << ch << "----->" << to << " => [other group]";
+                        s2.insert(node);
                     }
-
                 }
             }
         }
@@ -147,6 +147,7 @@ void mdfa::parseMDFA()
 void mdfa::testMDFA(QString str)
 {
     auto node = nodes[start];
+    int index=0;
     foreach(QChar ch,str)
     {
         auto edge=node->edges;
@@ -155,7 +156,7 @@ void mdfa::testMDFA(QString str)
         {
             if(edge->accept(ch))
             {
-                qDebug() << QChar('A'+node->num) << "----" << ch << "---->" << QChar('A'+edge->to->num);
+                qDebug() << node->num << "----" << ch << "---->" << edge->to->num;
                 node = edge->to;
                 hasEdge=true;
                 break;
@@ -164,10 +165,12 @@ void mdfa::testMDFA(QString str)
         }
         if(!hasEdge)//对当前输入无状态转移边，直接结束循环
         {
+            qDebug() << "mdfa process terminate.";
             break;
         }
+        index++;
     }
-    qDebug() << (node->isAccept() ? "ACCEPT" : "REJECT");
+    qDebug() << (node->isAccept()&&index==str.length() ? "ACCEPT" : "REJECT");
 }
 
 void mdfa::print()
@@ -212,6 +215,7 @@ void mdfa::print()
 bool mdfa::match(const QString &str)
 {
     auto node = nodes[start];
+    int index=0;
     foreach(QChar ch,str)
     {
         auto edge=node->edges;
@@ -230,7 +234,8 @@ bool mdfa::match(const QString &str)
         {
             break;
         }
+        index++;
     }
-    return node->isAccept();
+    return node->isAccept()&&index==str.length();
 }
 
