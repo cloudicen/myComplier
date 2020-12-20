@@ -40,6 +40,7 @@ public:
     int num;//节点编号，在一个dfa图中唯一标识节点
     QSet<int> closure;// 节点代表的nfa状态集
     bool accept=false;// 标识接受节点
+    bool dead=false;
     dfaEdge *edges=nullptr;// 节点的边
     /* ------------------------------ */
     dfaNode(int _num = 0,const QSet<int>& _closure = QSet<int>()):num(_num),closure(_closure){};
@@ -51,6 +52,11 @@ public:
     bool isAccept() const
     {
         return accept;
+    }
+
+    bool isDead() const
+    {
+        return dead;
     }
 };
 

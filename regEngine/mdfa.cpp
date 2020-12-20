@@ -108,6 +108,10 @@ void mdfa::parseMDFA()
                 newNode->accept = true;
                 break;
             }
+            else if(dfaNodes.value(node)->isDead())
+            {
+                newNode->dead = true;
+            }
             else if(node == 0)
             {
                 start = currentNode;
@@ -147,30 +151,26 @@ void mdfa::parseMDFA()
 void mdfa::testMDFA(QString str)
 {
     auto node = nodes[start];
-    int index=0;
     foreach(QChar ch,str)
     {
         auto edge=node->edges;
-        bool hasEdge=false;
         while(edge != nullptr)
         {
             if(edge->accept(ch))
             {
                 qDebug() << node->num << "----" << ch << "---->" << edge->to->num;
                 node = edge->to;
-                hasEdge=true;
                 break;
             }
             edge = edge->next;
         }
-        if(!hasEdge)//对当前输入无状态转移边，直接结束循环
+        if(node->isDead())//对当前输入无状态转移边，直接结束循环
         {
             qDebug() << "mdfa process terminate.";
             break;
         }
-        index++;
     }
-    qDebug() << (node->isAccept()&&index==str.length() ? "ACCEPT" : "REJECT");
+    qDebug() << (node->isAccept() ? "ACCEPT" : "REJECT");
 }
 
 void mdfa::print()
@@ -192,6 +192,10 @@ void mdfa::print()
             {
                 from = " ACCEPT  ";
             }
+            if(edge->from->isDead())
+            {
+                from = " DEAD    ";
+            }
             if(edge->to->num == start)
             {
                 to = " START";
@@ -199,6 +203,10 @@ void mdfa::print()
             if(edge->to->isAccept())
             {
                 to = " ACCEPT";
+            }
+            if(edge->to->isDead())
+            {
+                to = " DEAD    ";
             }
             QString info;
             auto p = QDebug(&info);

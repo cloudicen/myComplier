@@ -47,7 +47,11 @@ dfaNode *dfa::getNode(QSet<int> closure)
         }
     }
     dfaNode* newNode = new dfaNode(nodeNumber,closure);
-    if(closure.contains(nfaAccept))
+    if(closure.isEmpty())
+    {
+        newNode->dead = true;
+    }
+    else if(closure.contains(nfaAccept))
     {
         newNode->accept = true;
     }
@@ -181,7 +185,6 @@ void dfa::parseDFA()
 void dfa::testDFA(QString str)
 {
     auto node = nodes[start];
-    int index = 0;
     foreach(QChar ch,str)
     {
         auto edge=node->edges;
@@ -197,14 +200,13 @@ void dfa::testDFA(QString str)
             }
             edge = edge->next;
         }
-        if(!hasEdge)//对当前输入无状态转移边，直接结束循环
+        if(node->isDead())//对当前输入无状态转移边，直接结束循环
         {
             qDebug() << "dfa process terminate.";
             break;
         }
-        index++;
     }
-    qDebug() << (node->isAccept()&&index == str.size() ? "ACCEPT" : "REJECT");
+    qDebug() << (node->isAccept() ? "ACCEPT" : "REJECT");
 }
 
 void dfa::toPrintable()
@@ -226,6 +228,10 @@ void dfa::toPrintable()
             {
                 from = " ACCEPT  ";
             }
+            if(edge->from->isDead())
+            {
+                from = " DEAD    ";
+            }
             if(edge->to->num == start)
             {
                 to = " START";
@@ -233,6 +239,10 @@ void dfa::toPrintable()
             if(edge->to->isAccept())
             {
                 to = " ACCEPT";
+            }
+            if(edge->to->isDead())
+            {
+                to = " DEAD    ";
             }
             QString info;
             auto p = QDebug(&info);
