@@ -233,14 +233,39 @@ void dfa::testDFA(QString str)
 
 void dfa::toPrintable()
 {
-    qDebug() << "dfa begin node:" << start;
+    std::cout << "------------------------------------------------------\n";
+    std::cout << "| "<< "start node:" << start << " | " << "total node count:" << nodeNumber << ".\n";
+    std::cout << "|\n";
     foreach(auto node,nodes)
     {
         auto edge=node->edges;
         while(edge != nullptr)
         {
-            qDebug() << "\t" << edge->from->num << " ---- (" << edge->info << ") ---- " << edge->to->num << (edge->to->isAccept() ? "ACCEPT" : "");
+            QString from="         ",to="";
+            if(edge->from->num == start)
+            {
+                from = "  START  ";
+            }
+            if(edge->from->isAccept())
+            {
+                from = " ACCEPT  ";
+            }
+            if(edge->to->num == start)
+            {
+                to = " START";
+            }
+            if(edge->to->isAccept())
+            {
+                to = " ACCEPT";
+            }
+            QString info;
+            auto p = QDebug(&info);
+            p.setAutoInsertSpaces(false);
+            p << edge->info;
+            std::cout << "| " << from.toStdString() << edge->from->num << " ---- ( " << info.toStdString() << " ) ---- " << edge->to->num << to.toStdString() << "\n";
             edge = edge->next;
         }
     }
+    std::cout << "|\n";
+    std::cout << "------------------------------------------------------\n";
 }

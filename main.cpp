@@ -5,19 +5,18 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-    regTree* tree= new regTree("T*");
-    //regTree tree("w.h.i.l.e.\\(.\\d*.\\).{.\\s*.}");
+    //regTree* tree= new regTree("T*");
+    regTree tree("w.h.i.l.e.\\(.\\d*.\\).{.\\s*.}");
     //regTree tree("a|b*");形如这样的前缀冲突模式目前无法工作，实际使用的时候应转换成多个符号，即拆分成多个dfa引擎分别匹配后再进行决定
-    if(tree->analyze())
+    if(tree.analyze())
     {
-       treeStructPrinter<regNode,2,64>::printTree(tree->getRootNode());
+       treeStructPrinter<regNode,2,64>::printTree(tree.getRootNode());
 
-       auto test = new nfa(*tree);
+       auto test = new nfa(tree);
        test->parseNFA();
-       test->toPrintable();
+       test->print();
        test->testNFA("while(123){}");
 
-       delete tree;
 
        auto dfaTest = dfa(*test);
        dfaTest.parseDFA();
@@ -30,7 +29,7 @@ int main(int argc, char *argv[])
 
        auto mdfaTest = mdfa(dfaTest);
        mdfaTest.parseMDFA();
-       mdfaTest.toPrintable();
+       mdfaTest.print();
        mdfaTest.testMDFA("99");
 
     }

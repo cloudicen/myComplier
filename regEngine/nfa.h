@@ -4,6 +4,8 @@
 #include "nfa_graph.h"
 #include "reg_tree.h"
 #include <QMultiMap>
+#include <iostream>
+#include <iomanip>
 
 class nfa
 {
@@ -68,7 +70,7 @@ public:
 
     void testNFA(QString str);
 
-    void toPrintable();
+    void print();
 
     bool isValid()
     {

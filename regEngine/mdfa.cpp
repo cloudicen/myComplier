@@ -2,7 +2,7 @@
 
 QPair<QSet<int>, QSet<int> > mdfa::split(QSet<int> nodeGroup)
 {
-    if(nodeGroup.size()==1)
+    if(nodeGroup.size()<=1)
     {
         qDebug() << nodeGroup << "can't spilt";
         return qMakePair(nodeGroup,nodeGroup);
@@ -163,18 +163,43 @@ void mdfa::testMDFA(QString str)
     qDebug() << (node->isAccept() ? "ACCEPT" : "REJECT");
 }
 
-void mdfa::toPrintable()
+void mdfa::print()
 {
-    qDebug() << "start node:" << start;
+    std::cout << "------------------------------------------------------\n";
+    std::cout << "| "<< "start node:" << start << " | " << "total node count:" << nodeNumber << ".\n";
+    std::cout << "|\n";
     foreach(auto node,nodes)
     {
         auto edge=node->edges;
         while(edge != nullptr)
         {
-            qDebug() << "\t" << edge->from->num << " ---- (" << edge->info << ") ---- " << edge->to->num << (edge->to->isAccept() ? "ACCEPT" : "");
+            QString from="         ",to="";
+            if(edge->from->num == start)
+            {
+                from = "  START  ";
+            }
+            if(edge->from->isAccept())
+            {
+                from = " ACCEPT  ";
+            }
+            if(edge->to->num == start)
+            {
+                to = " START";
+            }
+            if(edge->to->isAccept())
+            {
+                to = " ACCEPT";
+            }
+            QString info;
+            auto p = QDebug(&info);
+            p.setAutoInsertSpaces(false);
+            p << edge->info;
+            std::cout << "| " << from.toStdString() << edge->from->num << " ---- ( " << info.toStdString() << " ) ---- " << edge->to->num << to.toStdString() << "\n";
             edge = edge->next;
         }
     }
+    std::cout << "|\n";
+    std::cout << "------------------------------------------------------\n";
 }
 
 bool mdfa::match(const QString &str)

@@ -31,10 +31,10 @@ void nfa::Thompson(const regNode *subTree)
     }
     else if(op == Closure)
     {
-        qDebug() << start << accept;
         Thompson(subTree->children[0]);
         addEdge(accept, start, nfaEdge::EPS);
         int from = nodeNumber++;
+        //这里为了整体逻辑正确，多添加了一个eps边，后续转dfa的时候会被优化掉，
         addEdge(from, start, nfaEdge::EPS);
         int to = nodeNumber++;
         addEdge(from, to, nfaEdge::EPS);
@@ -170,42 +170,56 @@ void nfa::testNFA(QString str="")
     {
         if(index == 0)
         {
-            qDebug() << "EPS closure" << c;
+            qDebug() << "EPS closure" << c << "(\'A\')";
         }
         else
         {
-            qDebug() << "closure" << index << c << " for smove(" << QChar('A'+index-1) << ',' << str.at(index-1) << ')';
+            qDebug() << "smove(" << QChar('A'+index-1) << ',' << str.at(index-1) << ')' << "=" << QChar('A'+index) << c ;
         }
         index++;
     }
 
     if(!closures.isEmpty() && closures.back().contains(accept))
     {
-        qDebug() << "accept!";
+        qDebug() << "ACCEPT!";
     }
     else
     {
-        qDebug() << "reject!";
+        qDebug() << "REJECT!";
     }
 }
 
-void nfa::toPrintable()
+void nfa::print()
 {
-    qDebug() << "start node:" << start << "accept node:" << accept;
+    std::cout << "------------------------------------------------------\n";
+    std::cout << "| "<< "start node:" << start  << " | " << "accept node:" << accept << " | " << "total node count:" << nodeNumber << ".\n";
+    std::cout << "|\n";
     foreach(auto node,nodes)
     {
         auto edge=node->edges;
         while(edge != nullptr)
         {
-            if (edge->info == nfaEdge::EPS)
+            QString from="         ",to="";
+            if(edge->from->num == start)
             {
-                qDebug() << "\t" << edge->from->num << " --- (EPS) ---- " << edge->to->num ;
+                from = "  START  ";
             }
-            else
+            if(edge->from->num == accept)
             {
-                qDebug() << "\t" << edge->from->num << " ---- (" << edge->info << ") ---- " << edge->to->num;
+                from = " ACCEPT  ";
             }
+            if(edge->to->num == start)
+            {
+                to = " START";
+            }
+            if(edge->to->num == accept)
+            {
+                to = " ACCEPT";
+            }
+            std::cout << "| " << from.toStdString() << edge->from->num << " ---- ( " << edge->info.toStdString() << " ) ---- " << edge->to->num << to.toStdString() << "\n";
             edge = edge->next;
         }
     }
+    std::cout << "|\n";
+    std::cout << "------------------------------------------------------\n";
 }

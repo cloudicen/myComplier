@@ -45,7 +45,7 @@ public:
 
     void testMDFA(QString str);
 
-    void toPrintable();
+    void print();
 
     bool match(const QString &str);
 };
