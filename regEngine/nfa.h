@@ -48,13 +48,19 @@ public:
 
         //赋值&重置图参数
         start = other.start;
-        other.start=0;
         accept = other.accept;
-        other.accept = 0;
         valid = other.valid;
-        other.valid=false;
         nodeNumber = other.nodeNumber;
+
+        other.start=0;
+        other.accept=0;
+        other.valid=0;
         other.nodeNumber=0;
+    }
+
+    nfa operator=(nfa&& other)
+    {
+        return nfa(std::move(other));
     }
 
     QMap<int,QSharedPointer<const nfaNode>> getAllNodes()

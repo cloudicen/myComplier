@@ -8,16 +8,15 @@ class mdfa
 {
 private:
     /* ---------- 要最小化的dfa图 --------- */
-    QMap<int,dfaNode *> dfaNodes;
-    QMultiMap<QChar, dfaEdge*> dfaEdges;
+    dfa DFAgraph;
     QSet<QChar> alphabet;
     /* ---------------------------------*/
 
 
     /* ---------- 最小化dfa图相关属性 ---------*/
     int start = 0;//起始节点编号
-    QMap<int,dfaNode *> nodes;// 把所有的顶点存储为一个map, 因为每个顶点都有一个唯一的标识符num, 用num来索引顶点指针
-    QMultiMap<QChar,dfaEdge*> edges;// 把所有的边存储为一个multimap, 根据边上的字符来索引边的指针
+    QMap<int,QSharedPointer<dfaNode>> nodes;// 把所有的顶点存储为一个map, 因为每个顶点都有一个唯一的标识符num, 用num来索引顶点指针
+    QMultiMap<QChar,QSharedPointer<dfaEdge>> edges;// 把所有的边存储为一个multimap, 根据边上的字符来索引边的指针
     bool valid=false;
     /* ------------------------------------*/
 
@@ -34,7 +33,28 @@ private:
     void addEdge(int from, int to, QChar ch);//新建一条边
 
 public:
-    mdfa(dfa ins):dfaNodes(ins.getAllNodes()),dfaEdges(ins.getAllEdges()),alphabet(ins.getAlphabet()){};
+    mdfa()=default;
+    mdfa(dfa &ins):DFAgraph(std::move(ins)),alphabet(DFAgraph.getAlphabet()){};
+    mdfa(const mdfa&)=delete;
+    mdfa(mdfa && other)
+    {
+        DFAgraph = std::move(other.DFAgraph);
+        alphabet = std::move(other.alphabet);
+        nodes = std::move(other.nodes);
+        edges = std::move(other.edges);
+        start = other.start;
+        valid = other.valid;
+
+        other.start=0;
+        other.valid=false;
+        other.nodeNumber=0;
+        other.finalGroups.clear();
+    }
+
+    mdfa operator=(mdfa&& other)
+    {
+        return mdfa(std::move(other));
+    }
 
     bool isValid()
     {

@@ -28,16 +28,16 @@ void dfa::subsetConstruct()
     }
 }
 
-void dfa::addEdge(QSet<int> from, QSet<int> to, QChar ch)
+void dfa::addEdge(QSet<int> &from, QSet<int> &to, QChar ch)
 {
-    dfaNode* f = getNode(from);
-    dfaNode* t = getNode(to);
-    dfaEdge* edge = new dfaEdge(ch,f,t,f->edges);
-    f->edges = edge;
+    auto f = getNode(from);
+    auto t = getNode(to);
+    QSharedPointer<dfaEdge> edge = QSharedPointer<dfaEdge>::create(ch,f,t);
+    f->edges[ch] = edge;
     edges.insert(ch,edge);
 }
 
-dfaNode *dfa::getNode(QSet<int> closure)
+QSharedPointer<dfaNode> dfa::getNode(QSet<int> closure)
 {
     foreach(auto node,nodes)
     {
@@ -46,7 +46,7 @@ dfaNode *dfa::getNode(QSet<int> closure)
             return node;
         }
     }
-    dfaNode* newNode = new dfaNode(nodeNumber,closure);
+    auto newNode = QSharedPointer<dfaNode>::create(nodeNumber,std::move(closure));
     if(closure.isEmpty())
     {
         newNode->dead = true;
@@ -58,6 +58,7 @@ dfaNode *dfa::getNode(QSet<int> closure)
     if(nodes.isEmpty())
     {
         start=nodeNumber;
+        newNode->start=true;
     }
     nodes.insert(nodeNumber,newNode);
     nodeNumber++;
@@ -141,18 +142,13 @@ void dfa::testDFA(QString str)
     int pos=0;
     foreach(QChar ch,str)
     {
-        auto edge=node->edges;
+        auto edge=node->edges.value(ch);
         hasEdge = false;
-        while(edge != nullptr)
+        if(!edge.isNull())
         {
-            if(edge->accept(ch))
-            {
-                qDebug() << node->num << "----" << ch << "---->" << edge->to->num;
-                node = edge->to;
-                hasEdge = true;
-                break;
-            }
-            edge = edge->next;
+            qDebug() << node->num << "----" << ch << "---->" << edge->to.toStrongRef()->num;
+            node = edge->to;
+            hasEdge = true;
         }
         if(node->isAccept())
         {
@@ -193,40 +189,14 @@ void dfa::toPrintable()
     std::cout << "|\n";
     foreach(auto node,nodes)
     {
-        auto edge=node->edges;
-        while(edge != nullptr)
+        auto edges=node->edges;
+        foreach(auto edge,edges)
         {
-            QString from="         ",to="";
-            if(edge->from->num == start)
-            {
-                from = "  START  ";
-            }
-            if(edge->from->isAccept())
-            {
-                from = " ACCEPT  ";
-            }
-            if(edge->from->isDead())
-            {
-                from = " DEAD    ";
-            }
-            if(edge->to->num == start)
-            {
-                to = " START";
-            }
-            if(edge->to->isAccept())
-            {
-                to = " ACCEPT";
-            }
-            if(edge->to->isDead())
-            {
-                to = " DEAD    ";
-            }
             QString info;
             auto p = QDebug(&info);
             p.setAutoInsertSpaces(false);
             p << edge->info;
-            std::cout << "| " << from.toStdString() << edge->from->num << " ---- ( " << info.toStdString() << " ) ---- " << edge->to->num << to.toStdString() << "\n";
-            edge = edge->next;
+            std::cout << "| " << edge->toPrintable().toStdString() << "\n";
         }
     }
     std::cout << "|\n";

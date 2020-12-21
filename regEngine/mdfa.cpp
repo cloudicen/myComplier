@@ -5,11 +5,11 @@ QPair<QSet<int>, QSet<int> > mdfa::split(QSet<int> nodeGroup)
     foreach(auto ch ,alphabet)// 遍历字符表
     {
         QSet<int> s1, s2;// 存储新的分组
-        auto edges = dfaEdges.values(ch);
+        auto edges = DFAgraph.findEdges(ch);
         foreach(auto edge,edges)
         {
-            auto from=edge->from->num;
-            auto to=edge->to->num;
+            auto from=edge->from.toStrongRef()->num;
+            auto to=edge->to.toStrongRef()->num;
             if(nodeGroup.contains(from))
             {
                 if(nodeGroup.contains(to))
@@ -24,28 +24,6 @@ QPair<QSet<int>, QSet<int> > mdfa::split(QSet<int> nodeGroup)
                 }
             }
         }
-        /*
-        foreach(auto node,nodeGroup)// 遍历组内节点
-        {
-            for(auto edge=dfaNodes.value(node)->edges;edge!=nullptr;edge=edge->next)// 遍历该节点的边
-            {
-                if(edge->accept(ch))// 找出所有接受当前字符的边
-                {
-                    auto to = edge->to->num;
-                    if(nodeGroup.contains(to))// 当前节点指向当前组，放入s1
-                    {
-                        qDebug() << "CHECK EDGE:" << node << "----" << ch << "----->" << to << " => [current group]";
-                        s1.insert(node);
-                    }
-                    else// 当前节点指向其他组，放入s2
-                    {
-                        qDebug() << "CHECK EDGE:" << node << "----" << ch << "----->" << to << " => [other group]";
-                        s2.insert(node);
-                    }
-                }
-            }
-        }
-        */
         if (!s2.isEmpty() && !s1.isEmpty())//如果s1,s2均不空，则表明当前分组可以进一步细分，直接返回分组结果
         {
             qDebug() << nodeGroup << "can spilt to:" << s1 << s2;
@@ -60,7 +38,7 @@ QPair<QSet<int>, QSet<int> > mdfa::split(QSet<int> nodeGroup)
 void mdfa::hopcroft()
 {
     QSet<int> accept, notaccept;
-    foreach(auto node,dfaNodes)
+    foreach(auto node,DFAgraph.getAllNodes())
     {
         if (node->isAccept())
             accept.insert(node->num);
@@ -109,8 +87,8 @@ void mdfa::addEdge(int from, int to, QChar ch)
 {
     auto f = nodes.value(from);
     auto t = nodes.value(to);
-    auto edge = new dfaEdge(ch,f,t,f->edges);
-    f->edges = edge;
+    auto edge = QSharedPointer<dfaEdge>::create(ch,f,t);
+    f->edges[ch] = edge;
     edges.insert(ch,edge);
 }
 
@@ -120,18 +98,19 @@ void mdfa::parseMDFA()
     foreach(auto group,finalGroups)
     {
         int currentNode = nodeNumber++;
-        auto newNode = new dfaNode(currentNode,group);
+        auto newNode = QSharedPointer<dfaNode>::create(currentNode,group);
         foreach(auto node,group)
         {
             if(node == 0)
             {
                 start = currentNode;
+                newNode->start=true;
             }
-            if(dfaNodes.value(node)->isAccept())
+            if(DFAgraph.findNode(node)->isAccept())
             {
                 newNode->accept = true;
             }
-            else if(dfaNodes.value(node)->isDead())
+            else if(DFAgraph.findNode(node)->isDead())
             {
                 newNode->dead = true;
             }
@@ -140,18 +119,18 @@ void mdfa::parseMDFA()
     }
     foreach(auto ch,alphabet)
     {
-        auto edges = dfaEdges.values(ch);
+        auto edges = DFAgraph.findEdges(ch);
         QSet<QPair<int,int>> edgeGroup;
         foreach(auto edge,edges)
         {
             int from=0,to=0;
             foreach(auto node,nodes)
             {
-                if(node->closure.contains(edge->from->num))
+                if(node->closure.contains(edge->from.toStrongRef()->num))
                 {
                     from = node->num;
                 }
-                if(node->closure.contains(edge->to->num))
+                if(node->closure.contains(edge->to.toStrongRef()->num))
                 {
                     to = node->num;
                 }
@@ -174,18 +153,13 @@ void mdfa::testMDFA(QString str)
     int pos=0;
     foreach(QChar ch,str)
     {
-        auto edge=node->edges;
+        auto edge=node->edges.value(ch);
         hasEdge = false;
-        while(edge != nullptr)
+        if(!edge.isNull())
         {
-            if(edge->accept(ch))
-            {
-                qDebug() << node->num << "----" << ch << "---->" << edge->to->num;
-                node = edge->to;
-                hasEdge = true;
-                break;
-            }
-            edge = edge->next;
+            qDebug() << node->num << "----" << ch << "---->" << edge->to.toStrongRef()->num;
+            node = edge->to;
+            hasEdge = true;
         }
         if(node->isAccept())
         {
@@ -226,40 +200,14 @@ void mdfa::print()
     std::cout << "|\n";
     foreach(auto node,nodes)
     {
-        auto edge=node->edges;
-        while(edge != nullptr)
+        auto edges=node->edges;
+        foreach(auto edge,edges)
         {
-            QString from="         ",to="";
-            if(edge->from->num == start)
-            {
-                from = "  START  ";
-            }
-            if(edge->from->isAccept())
-            {
-                from = " ACCEPT  ";
-            }
-            if(edge->from->isDead())
-            {
-                from = " DEAD    ";
-            }
-            if(edge->to->num == start)
-            {
-                to = " START";
-            }
-            if(edge->to->isAccept())
-            {
-                to = " ACCEPT";
-            }
-            if(edge->to->isDead())
-            {
-                to = " DEAD    ";
-            }
             QString info;
             auto p = QDebug(&info);
             p.setAutoInsertSpaces(false);
             p << edge->info;
-            std::cout << "| " << from.toStdString() << edge->from->num << " ---- ( " << info.toStdString() << " ) ---- " << edge->to->num << to.toStdString() << "\n";
-            edge = edge->next;
+            std::cout << "| " << edge->toPrintable().toStdString() << "\n";
         }
     }
     std::cout << "|\n";
@@ -274,17 +222,12 @@ int mdfa::match(const QString &str)
     int pos=0;
     foreach(QChar ch,str)
     {
-        auto edge=node->edges;
+        auto edge=node->edges.value(ch);
         hasEdge = false;
-        while(edge != nullptr)
+        if(!edge.isNull())
         {
-            if(edge->accept(ch))
-            {
-                node = edge->to;
-                hasEdge = true;
-                break;
-            }
-            edge = edge->next;
+            node = edge->to;
+            hasEdge = true;
         }
         if(node->isAccept())
         {

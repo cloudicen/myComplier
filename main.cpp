@@ -23,22 +23,18 @@ int main(int argc, char *argv[])
        test.print();
        test.testNFA(testStr);
 
-
        auto dfaTest = dfa(test);
        dfaTest.parseDFA();
        dfaTest.toPrintable();
        dfaTest.testDFA(testStr);
 
-       auto mdfaTest = mdfa(std::move(dfaTest));
+       auto mdfaTest = mdfa(dfaTest);
        mdfaTest.parseMDFA();
        mdfaTest.print();
        mdfaTest.testMDFA(testStr);
 
        std::cout << testStr.toStdString() << '\n';
        std::cout << std::setw(mdfaTest.match("sin(12.34)sin(567.0)..")+1) << std::right << '^' << "~~~~~";
-       //qDebug() << mdfaTest.match("sin(12.34)sin(567.0)..") << strlen("sin(12.34)sin(567.0)..");
-
-
     }
     else
     {

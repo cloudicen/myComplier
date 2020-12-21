@@ -127,8 +127,9 @@ public:
         analyzed=other.analyzed;
 
         other.analyzed = false;
-        other.signStack.clear();
+        other.pos = -1;
         other.currentChar=0;
+        other.signStack.clear();
     }
 
     regTree operator=(regTree&& other)
