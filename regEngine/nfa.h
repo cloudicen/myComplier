@@ -18,8 +18,8 @@ private:
     /* -----------nfa图相关属性------------ */
     int start=0;// 开始状态节点编号
     int accept=0;// 接受状态节点编号
-    QMap<int,nfaNode *> nodes;// 所有节点存储为一个map，因为每个顶点都有一个唯一的标识符num, 用num来索引顶点指针
-    QMultiMap<QString,nfaEdge*> edges; // 把所有非EPS边存储为一个multimap, 根据边上的字符来索引边的指针
+    QMap<int,QSharedPointer<nfaNode>> nodes;// 所有节点存储为一个map，因为每个顶点都有一个唯一的标识符num, 用num来索引顶点指针
+    QMultiMap<QString,QSharedPointer<nfaEdge>> edges; // 把所有非EPS边存储为一个multimap, 根据边上的字符来索引边的指针
     bool valid=false;
     /* --------------------------------- */
 
@@ -32,28 +32,65 @@ private:
     /* -----------nfa图构造方法------------ */
     void Thompson(const QWeakPointer<const regNode> &subTree);// Thompson算法
     void addEdge(int from, int to, QString info);// 添加一条边
-    nfaNode* getNode(int num);// 获取一个节点，若不存在则创建
+    QSharedPointer<nfaNode> getNode(int num);// 获取一个节点，若不存在则创建
     /* ----------------------------------- */
 
 public:
+    nfa()=default;
     nfa(regTree &_tree):tree(std::move(_tree)){};
-
-    /**
-     * @brief getAllNodes 返回节点map的const引用
-     * @return
-     */
-    QMap<int,nfaNode *> getAllNodes()
+    nfa(const nfa&)=delete;
+    nfa(nfa&& other)
     {
-        return nodes;
-    };
+        //移动图结构
+        nodes = std::move(other.nodes);
+        edges = std::move(other.edges);
+        tree = std::move(other.tree);
 
-    /**
-     * @brief getAllEdges 返回边节点的const引用
-     * @return
-     */
-    QMultiMap<QString,nfaEdge*> getAllEdges()
+        //赋值&重置图参数
+        start = other.start;
+        other.start=0;
+        accept = other.accept;
+        other.accept = 0;
+        valid = other.valid;
+        other.valid=false;
+        nodeNumber = other.nodeNumber;
+        other.nodeNumber=0;
+    }
+
+    QMap<int,QSharedPointer<const nfaNode>> getAllNodes()
     {
-        return edges;
+        QMap<int,QSharedPointer<const nfaNode>> constRef;
+        for(auto item=nodes.begin();item!=nodes.end();item++)
+        {
+            constRef[item.key()] = item.value();
+        }
+        return constRef;
+    }
+
+    QMultiMap<QString,QSharedPointer<const nfaEdge>> getAllEdges()
+    {
+        QMultiMap<QString,QSharedPointer<const nfaEdge>> constRef;
+        for(auto item=edges.begin();item!=edges.end();item++)
+        {
+            constRef.insert(item.key(),item.value());
+        }
+        return constRef;
+    }
+
+    const QSharedPointer<const nfaNode> findNode(int node)
+    {
+        return nodes.value(node);
+    }
+
+    QList<QSharedPointer<const nfaEdge>> findEdges(const QString& info)
+    {
+        QList<QSharedPointer<const nfaEdge>> constRef;
+        auto edgeSet = edges.values(info);
+        for(auto item=edgeSet.begin();item!=edgeSet.end();item++)
+        {
+            constRef.push_back(*item);
+        }
+        return constRef;
     };
 
     int getStartNode()

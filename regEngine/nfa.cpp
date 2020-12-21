@@ -55,11 +55,11 @@ void nfa::Thompson(const QWeakPointer<const regNode> &subTree)
             int to = nodeNumber++;
             if(treeRef->info=="empty")//如果当前节点代表空串，则添加eps边
             {
-               addEdge(from,to,nfaEdge::EPS);
+                addEdge(from,to,nfaEdge::EPS);
             }
             else
             {
-               addEdge(from, to, treeRef->info);
+                addEdge(from, to, treeRef->info);
             }
             start = from;
             accept = to;
@@ -69,17 +69,21 @@ void nfa::Thompson(const QWeakPointer<const regNode> &subTree)
 
 void nfa::addEdge(int from, int to, QString info)
 {
-    nfaNode *f = getNode(from);
-    nfaNode *t = getNode(to);
-    nfaEdge *edge = new nfaEdge(info, f, t, f->edges);
-    f->edges = edge;
+    auto f = getNode(from);
+    auto t = getNode(to);
+    QSharedPointer<nfaEdge> edge = QSharedPointer<nfaEdge>::create(info, f, t);
     if(info != nfaEdge::EPS)
     {
+        f->edges.insert(info,edge);
         edges.insert(info,edge);
+    }
+    else
+    {
+        f->epsEdges.insert(edge);
     }
 }
 
-nfaNode *nfa::getNode(int num)
+QSharedPointer<nfaNode> nfa::getNode(int num)
 {
     auto node = nodes.find(num);
     if(node != nodes.end())
@@ -88,7 +92,7 @@ nfaNode *nfa::getNode(int num)
     }
     else
     {
-        nfaNode *p = new nfaNode(num);
+        QSharedPointer<nfaNode> p = QSharedPointer<nfaNode>::create(num);
         nodes[num] = p;
         return p;
     }
@@ -97,6 +101,8 @@ nfaNode *nfa::getNode(int num)
 void nfa::parseNFA()
 {
     Thompson(tree.getRootNode());
+    nodes[start]->type = nfaNodeType::start;
+    nodes[accept]->type = nfaNodeType::accept;
     valid = true;
 }
 
@@ -153,28 +159,15 @@ void nfa::print()
     std::cout << "|\n";
     foreach(auto node,nodes)
     {
-        auto edge=node->edges;
-        while(edge != nullptr)
+        auto edges=node->edges;
+        foreach(auto edge,edges)
         {
-            QString from="         ",to="";
-            if(edge->from->num == start)
-            {
-                from = "  START  ";
-            }
-            if(edge->from->num == accept)
-            {
-                from = " ACCEPT  ";
-            }
-            if(edge->to->num == start)
-            {
-                to = " START";
-            }
-            if(edge->to->num == accept)
-            {
-                to = " ACCEPT";
-            }
-            std::cout << "| " << from.toStdString() << edge->from->num << " ---- ( " << edge->info.toStdString() << " ) ---- " << edge->to->num << to.toStdString() << "\n";
-            edge = edge->next;
+            std::cout << "| " << edge->toPrintable().toStdString() << "\n";
+        }
+        auto espEdges=node->epsEdges;
+        foreach(auto edge,espEdges)
+        {
+            std::cout << "| " << edge->toPrintable().toStdString() << "\n";
         }
     }
     std::cout << "|\n";
@@ -189,19 +182,20 @@ QSet<int> nfa::getEPSclosure(QSet<int> start)
     {
         QVector<int> nextNodes;
         nextNodes.push_back(n);
-
         while (!nextNodes.isEmpty())
         {
-            auto node = nodes.find(nextNodes.back()).value();
+            auto node = nodes.value(nextNodes.back());
             nextNodes.pop_back();
-            for(auto edge=node->edges;edge!=nullptr;edge = edge->next)
+            auto nodeEdges = node->epsEdges;
+            foreach(auto edge,nodeEdges)
             {
-                if(edge->isEPS())
+                auto toNode = edge->to.toStrongRef();
+                if(!toNode.isNull())
                 {
-                    if(!closure.contains(edge->to->num))
+                    if(!closure.contains(toNode->num))
                     {
-                        closure.insert(edge->to->num);
-                        nextNodes.push_back(edge->to->num);
+                        closure.insert(toNode->num);
+                        nextNodes.push_back(toNode->num);
                     }
                 }
             }
@@ -216,13 +210,15 @@ QSet<int> nfa::getSMove(QSet<int> current, QChar ch)
     foreach(auto n,current)
     {
         auto node = nodes.value(n);
-        for(auto edge=node->edges;edge!=nullptr;edge = edge->next)
+        auto nodeEdges = node->edges;
+        foreach(auto edge,nodeEdges)
         {
             if(edge->accept(ch))
             {
-                if(!closure.contains(edge->to->num))
+                auto toNode = edge->to.toStrongRef();
+                if(!toNode.isNull())
                 {
-                    closure.insert(edge->to->num);
+                    closure.insert(toNode->num);
                 }
             }
         }

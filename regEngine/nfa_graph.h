@@ -4,8 +4,36 @@
 
 #include <QString>
 #include <QChar>
+#include <QMap>
+#include <QSet>
+#include <QPointer>
 
-class nfaNode;//前置声明
+class nfaEdge;//前置声明
+
+enum nfaNodeType{start,accept,normal};
+
+class nfaNode
+{
+public:
+    /* ---------nfa节点信息-------- */
+    int num;// 节点编号，nfa图中唯一标识一个节点
+    nfaNodeType type;
+    QSet<QSharedPointer<nfaEdge>> epsEdges;// 以该节点为起始的所有epsilon边
+    QMap<QString,QSharedPointer<nfaEdge>> edges;// 以该节点为起始的所有非epsilon边
+    /* -------------------------- */
+
+    nfaNode(int _num = 0,nfaNodeType _type=normal):num(_num),type(_type){};
+
+    bool isAccept()
+    {
+        return type == accept;
+    }
+
+    bool isStart()
+    {
+        return type == start;
+    }
+};
 
 class nfaEdge
 {
@@ -15,13 +43,12 @@ public:
     static const QString EPS;
 
     QString info="";// 边的信息，表示接受的字符类型
-    nfaNode *from=nullptr;//起始节点指针
-    nfaNode *to=nullptr;// 目标节点指针
-    nfaEdge *next=nullptr;// 起始节点的下一条边指针，一个节点可以有多个边，这里采用链表结构存储
+    QWeakPointer<nfaNode> from;//起始节点指针
+    QWeakPointer<nfaNode> to;// 目标节点指针
     /* ------------------------------------------- */
 
-    nfaEdge(const QString& _info, nfaNode *_from, nfaNode *_to, nfaEdge *_next=nullptr):
-        info(_info),from(_from),to(_to),next(_next){};
+    nfaEdge(const QString& _info, QWeakPointer<nfaNode> _from, QWeakPointer<nfaNode> _to):
+        info(_info),from(_from),to(_to){};
 
     /**
      * @brief isEPS 当前边是否是epsilon边
@@ -81,18 +108,41 @@ public:
         }
     }
 
-};
+    QString toPrintable()
+    {
+        QString str;
+        QSharedPointer<nfaNode> fromNode = from.toStrongRef();
+        QSharedPointer<nfaNode> toNode = to.toStrongRef();
+        if(!fromNode.isNull() && !toNode.isNull())
+        {
+            QString from="         ",to="";
+            if(fromNode->isStart())
+            {
+                from = "  START  ";
+            }
+            if(fromNode->isAccept())
+            {
+                from = " ACCEPT  ";
+            }
+            if(toNode->isStart())
+            {
+                to = " START";
+            }
+            if(toNode->isAccept())
+            {
+                to = " ACCEPT";
+            }
+            str.append(from);
+            str.append(QString().setNum(fromNode->num));
+            str.append(" -----( ");
+            str.append(info);
+            str.append(" )----> ");
+            str.append(QString().setNum(toNode->num));
+            str.append(to);
+        }
+        return str;
+    }
 
-
-class nfaNode
-{
-public:
-    /* ---------nfa节点信息-------- */
-    int num;// 节点编号，nfa图中唯一标识一个节点
-    nfaEdge *edges=nullptr;// 以该节点为起始的边指针
-    /* -------------------------- */
-
-    nfaNode(int _num = 0):num(_num){};
 };
 
 #endif // NFA_GRAPH_H

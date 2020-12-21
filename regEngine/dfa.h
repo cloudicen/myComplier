@@ -8,10 +8,9 @@ class dfa
 {
 private:
     /* ---------- 要转换的nfa图 --------- */
-    int nfaStart=0;// 开始态顶点编号
-    int nfaAccept=0;// 接受态顶点编号
-    QMap<int,nfaNode *> nfaNodes;// 顶点
-    QMultiMap<QString,nfaEdge*> nfaEdges;// 边
+    nfa NFAgraph;
+    int nfaStart;
+    int nfaAccept;
     /* --------------------------------*/
 
 
@@ -35,16 +34,13 @@ private:
     void addEdge(QSet<int> from, QSet<int> to, QChar ch);// 添加一条边
     dfaNode* getNode(QSet<int> closure);// 获取一个节点，若不存在则创建
     void parseAlphabet();// 根据nfa图获取字符表
-    QSet<int> getEPSclosure(QSet<int> start);// 求初态epsilon闭包
-    QSet<int> getSMove(QSet<int> current,QChar ch);// 求epsilon闭包
     /* ----------------------------------------*/
 
 public:
     dfa(nfa &ins):
-        nfaStart(ins.getStartNode()),
-        nfaAccept(ins.getAcceptNode()),
-        nfaNodes(ins.getAllNodes()),
-        nfaEdges(ins.getAllEdges()){};
+        NFAgraph(std::move(ins)),
+        nfaStart(NFAgraph.getStartNode()),
+        nfaAccept(NFAgraph.getAcceptNode()){};
 
     void parseDFA();
 

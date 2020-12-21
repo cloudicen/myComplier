@@ -18,18 +18,18 @@ int main(int argc, char *argv[])
     {
        treeStructPrinter<regNode,2,64>::printTree(tree.getRootNode());
 
-       auto test = new nfa(tree);
-       test->parseNFA();
-       test->print();
-       test->testNFA(testStr);
+       auto test = nfa(tree);
+       test.parseNFA();
+       test.print();
+       test.testNFA(testStr);
 
 
-       auto dfaTest = dfa(*test);
+       auto dfaTest = dfa(test);
        dfaTest.parseDFA();
        dfaTest.toPrintable();
        dfaTest.testDFA(testStr);
 
-       auto mdfaTest = mdfa(dfaTest);
+       auto mdfaTest = mdfa(std::move(dfaTest));
        mdfaTest.parseMDFA();
        mdfaTest.print();
        mdfaTest.testMDFA(testStr);

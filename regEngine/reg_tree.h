@@ -113,6 +113,7 @@ private:
     /* --------------------------------------------------------------------- */
 
 public:
+    regTree()=default;
     regTree(const QString& _regExpr):regExpr(_regExpr){};
     regTree(const regTree& other)=delete;
     regTree(regTree&& other)
@@ -128,6 +129,11 @@ public:
         other.analyzed = false;
         other.signStack.clear();
         other.currentChar=0;
+    }
+
+    regTree operator=(regTree&& other)
+    {
+        return regTree(std::move(other));
     }
 
     /**

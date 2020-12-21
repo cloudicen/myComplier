@@ -8,6 +8,7 @@ tocken::tocken()
 
 void tocken::construct()
 {
+    /*
     auto reg = regTree(regExpr);
     reg.analyze();
     auto nfaGraph = nfa(reg);
@@ -16,6 +17,7 @@ void tocken::construct()
     dfaGraph.parseDFA();
     macher = new mdfa(dfaGraph);
     macher->parseMDFA();
+    */
 }
 int tocken::match(const QString & str)
 {

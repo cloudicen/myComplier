@@ -2,7 +2,7 @@
 
 void dfa::subsetConstruct()
 {
-    auto beginStates = getEPSclosure({nfaStart});
+    auto beginStates = NFAgraph.getEPSclosure({nfaStart});
     qDebug() << "Start State closure" << beginStates;
     QVector<QSet<int>> worklist;
     worklist.push_back(beginStates);
@@ -12,8 +12,8 @@ void dfa::subsetConstruct()
         worklist.pop_front();
         foreach(auto ch,alphabet)
         {
-            QSet<int> smove = getSMove(currentStates,ch);
-            auto nextState = getEPSclosure(smove);
+            QSet<int> smove = NFAgraph.getSMove(currentStates,ch);
+            auto nextState = NFAgraph.getEPSclosure(smove);
             //如果下一状态集为空，则当前状态已经是终态或者是死状态,这里直接引入死状态
             {
                 addEdge(currentStates, nextState, ch);
@@ -67,10 +67,10 @@ dfaNode *dfa::getNode(QSet<int> closure)
 
 void dfa::parseAlphabet()
 {
-    foreach(auto edge,nfaEdges.keys())
+    foreach(auto edge,NFAgraph.getAllEdges())
     {
-        QString info = edge;
-        if(edge != nfaEdge::EPS)
+        QString info = edge->info;
+        if(!edge->isEPS())
         {
             if(info == "alpha")
             {
@@ -125,55 +125,6 @@ void dfa::parseAlphabet()
         }
     }
     qDebug() << "alphabet for dfa" << alphabet;
-}
-
-QSet<int> dfa::getEPSclosure(QSet<int> start)
-{
-    QSet<int> closure;
-    closure = start;
-    foreach(auto n,start)
-    {
-        QVector<int> nextNodes;
-        nextNodes.push_back(n);
-
-        while (!nextNodes.isEmpty())
-        {
-            auto node = nfaNodes.find(nextNodes.back()).value();
-            nextNodes.pop_back();
-            for(auto edge=node->edges;edge!=nullptr;edge = edge->next)
-            {
-                if(edge->isEPS())
-                {
-                    if(!closure.contains(edge->to->num))
-                    {
-                        closure.insert(edge->to->num);
-                        nextNodes.push_back(edge->to->num);
-                    }
-                }
-            }
-        }
-    }
-    return closure;
-}
-
-QSet<int> dfa::getSMove(QSet<int> current, QChar ch)
-{
-    QSet<int> closure;
-    foreach(auto n,current)
-    {
-        auto node = nfaNodes.value(n);
-        for(auto edge=node->edges;edge!=nullptr;edge = edge->next)
-        {
-            if(edge->accept(ch))
-            {
-                if(!closure.contains(edge->to->num))
-                {
-                    closure.insert(edge->to->num);
-                }
-            }
-        }
-    }
-    return closure;
 }
 
 void dfa::parseDFA()
