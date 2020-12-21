@@ -1,6 +1,8 @@
 ﻿#ifndef TOCKEN_H
 #define TOCKEN_H
 
+#include "dfamatcher.h"
+
 enum tockenType{
     CONST_ID,
     SYMBOL,
@@ -13,20 +15,29 @@ enum tockenType{
     NUMBER
 };
 
-#include <QString>
-#include "../regEngine/mdfa.h"
-
 class tocken
 {
-public:
+private:
+    QSharedPointer<QString> regExpr;
+    QSharedPointer<dfaMatcher> matcher;
     tockenType type;
+public:
     int val;
     int* func;
-    QString regExpr;
-    mdfa* macher;
-    tocken();
-    void construct();
-
+    tocken(const QString &_regExpr,tockenType _type=EMPTY,int _val=0,int* _func=nullptr):
+        regExpr(QSharedPointer<QString>::create(_regExpr)),
+        matcher(QSharedPointer<dfaMatcher>::create(*regExpr)),
+        type(_type),
+        val(_val),
+        func(_func){};
+    tocken(const tocken& other)
+    {
+        regExpr = other.regExpr;
+        matcher = other.matcher;
+        type = other.type;
+        val = other.val;
+        func = other.func;
+    }
     int match(const QString & str);
 };
 

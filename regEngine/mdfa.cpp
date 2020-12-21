@@ -160,10 +160,10 @@ void mdfa::testMDFA(QString str)
             qDebug() << node->num << "----" << ch << "---->" << edge->to.toStrongRef()->num;
             node = edge->to;
             hasEdge = true;
-        }
-        if(node->isAccept())
-        {
-            lastMatchPos=pos;
+            if(node->isAccept())
+            {
+                lastMatchPos=pos;
+            }
         }
         if(node->isDead() || !hasEdge)//对当前输入无状态转移边，直接结束循环
         {
@@ -228,10 +228,10 @@ int mdfa::match(const QString &str)
         {
             node = edge->to;
             hasEdge = true;
-        }
-        if(node->isAccept())
-        {
-            lastMatchPos=pos;
+            if(node->isAccept())
+            {
+                lastMatchPos=pos;
+            }
         }
         if(node->isDead() || !hasEdge)//对当前输入无状态转移边，直接结束循环
         {

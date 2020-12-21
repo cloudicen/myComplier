@@ -8,6 +8,7 @@ CONFIG -= app_bundle
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+        lexer/dfamatcher.cpp \
         lexer/tocken.cpp \
         main.cpp \
         regEngine/dfa.cpp \
@@ -21,7 +22,9 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
+    lexer/dfamatcher.h \
     lexer/tocken.h \
+    logger.h \
     regEngine/dfa.h \
     regEngine/dfa_graph.h \
     regEngine/mdfa.h \
@@ -29,4 +32,5 @@ HEADERS += \
     regEngine/nfa_graph.h \
     regEngine/reg_node.h \
     regEngine/reg_tree.h \
+    regEngine/unitTest.h \
     util/treestructprinter.h

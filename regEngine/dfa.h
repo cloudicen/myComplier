@@ -80,9 +80,9 @@ public:
         return constRef;
     }
 
-    QMultiMap<QString,QSharedPointer<const dfaEdge>> getAllEdges()
+    QMultiMap<QChar,QSharedPointer<const dfaEdge>> getAllEdges()
     {
-        QMultiMap<QString,QSharedPointer<const dfaEdge>> constRef;
+        QMultiMap<QChar,QSharedPointer<const dfaEdge>> constRef;
         for(auto item=edges.begin();item!=edges.end();item++)
         {
             constRef.insert(item.key(),item.value());

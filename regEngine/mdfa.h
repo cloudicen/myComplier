@@ -56,6 +56,21 @@ public:
         return mdfa(std::move(other));
     }
 
+    QMap<int,QSharedPointer<dfaNode>> takeAllNodes()
+    {
+        return std::move(nodes);
+    }
+
+    QMultiMap<QChar,QSharedPointer<dfaEdge>> takeAllEdges()
+    {
+        return std::move(edges);
+    }
+
+    int getStartNode()
+    {
+        return start;
+    }
+
     bool isValid()
     {
         return valid;
