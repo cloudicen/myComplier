@@ -9,6 +9,9 @@ int main(int argc, char *argv[])
     QString testStr = "sin(12.34)sin(567.0)sin(88882222.05)FUCK!!!!!!";
     tocken TEST("(s.i.n.\\(.\\d*.(\\.|\\e).\\d*.\\))*");
     std::cout << testStr.toStdString() << '\n';
-    std::cout << std::setw(TEST.match(testStr)) << " " << std::right << '^' << "~~~~~";
+    std::cout << std::setw(TEST.match(testStr)) << " " << std::right << '^' << "~~~~~\n";
+    tocken tocken2(TEST);
+    std::cout << testStr.toStdString() << '\n';
+    std::cout << std::setw(tocken2.match(testStr)) << " " << std::right << '^' << "~~~~~\n";
     return a.exec();
 }
