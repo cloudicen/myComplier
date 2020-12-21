@@ -1,65 +1,69 @@
 ﻿#include "nfa.h"
 
-void nfa::Thompson(const regNode *subTree)
+void nfa::Thompson(const QWeakPointer<const regNode> &subTree)
 {
-    auto op = subTree->type;
-    if(op == Alternate)
+    auto treeRef = subTree.toStrongRef();
+    if(!treeRef.isNull())
     {
-        qDebug() << "Parse Alternate Node";
-        Thompson(subTree->children[0]);
-        int start1 = start;
-        int accept1 = accept;
-        Thompson(subTree->children[1]);
-        int start2 = start;
-        int accept2 = accept;
-        int from = nodeNumber++;
-        addEdge(from, start1, nfaEdge::EPS);
-        addEdge(from, start2, nfaEdge::EPS);
-        int to = nodeNumber++;
-        addEdge(accept1, to, nfaEdge::EPS);
-        addEdge(accept2, to, nfaEdge::EPS);
-        start = from;
-        accept = to;
-    }
-    else if(op == Concat)
-    {
-        qDebug() << "Parse Concat Node";
-        Thompson(subTree->children[0]);
-        int oldStart = start;
-        nodeNumber--;
-        //int oldAccept = accept;
-        Thompson(subTree->children[1]);
-        //addEdge(oldAccept, start, nfaEdge::EPS);
-        start = oldStart;
-    }
-    else if(op == Closure)
-    {
-        qDebug() << "Parse Closure Node";
-        int from = nodeNumber++;
-        Thompson(subTree->children[0]);
-        addEdge(accept, start, nfaEdge::EPS);
-        addEdge(from, start, nfaEdge::EPS);
-        int to = nodeNumber++;
-        addEdge(from, to, nfaEdge::EPS);
-        addEdge(accept, to, nfaEdge::EPS);
-        start = from;
-        accept = to;
-    }
-    else if(op ==Element)
-    {
-        qDebug() << "Parse Element Node";
-        int from = nodeNumber++;
-        int to = nodeNumber++;
-        if(subTree->info=="empty")//如果当前节点代表空串，则添加eps边
+        auto op = treeRef->type;
+        if(op == Alternate)
         {
-           addEdge(from,to,nfaEdge::EPS);
+            qDebug() << "Parse Alternate Node";
+            Thompson(treeRef->children[0]);
+            int start1 = start;
+            int accept1 = accept;
+            Thompson(treeRef->children[0]);
+            int start2 = start;
+            int accept2 = accept;
+            int from = nodeNumber++;
+            addEdge(from, start1, nfaEdge::EPS);
+            addEdge(from, start2, nfaEdge::EPS);
+            int to = nodeNumber++;
+            addEdge(accept1, to, nfaEdge::EPS);
+            addEdge(accept2, to, nfaEdge::EPS);
+            start = from;
+            accept = to;
         }
-        else
+        else if(op == Concat)
         {
-           addEdge(from, to, subTree->info);
+            qDebug() << "Parse Concat Node";
+            Thompson(treeRef->children[0]);
+            int oldStart = start;
+            nodeNumber--;
+            //int oldAccept = accept;
+            Thompson(treeRef->children[1]);
+            //addEdge(oldAccept, start, nfaEdge::EPS);
+            start = oldStart;
         }
-        start = from;
-        accept = to;
+        else if(op == Closure)
+        {
+            qDebug() << "Parse Closure Node";
+            int from = nodeNumber++;
+            Thompson(treeRef->children[0]);
+            addEdge(accept, start, nfaEdge::EPS);
+            addEdge(from, start, nfaEdge::EPS);
+            int to = nodeNumber++;
+            addEdge(from, to, nfaEdge::EPS);
+            addEdge(accept, to, nfaEdge::EPS);
+            start = from;
+            accept = to;
+        }
+        else if(op ==Element)
+        {
+            qDebug() << "Parse Element Node";
+            int from = nodeNumber++;
+            int to = nodeNumber++;
+            if(treeRef->info=="empty")//如果当前节点代表空串，则添加eps边
+            {
+               addEdge(from,to,nfaEdge::EPS);
+            }
+            else
+            {
+               addEdge(from, to, treeRef->info);
+            }
+            start = from;
+            accept = to;
+        }
     }
 }
 
@@ -92,7 +96,7 @@ nfaNode *nfa::getNode(int num)
 
 void nfa::parseNFA()
 {
-    Thompson(regTreeRoot);
+    Thompson(tree.getRootNode());
     valid = true;
 }
 

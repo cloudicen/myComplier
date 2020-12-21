@@ -6,6 +6,7 @@
 #include <QString>
 #include <QVector>
 #include <QDebug>
+#include <QPointer>
 
 /**
  * @brief The reg_tree class
@@ -79,33 +80,15 @@ private:
 
 
     /* ---------------------------关键字定义------------------------------- */
-    QSet<QChar> keptChar = {'|','.','\\','*','(',')'};// 保留符号
-
-
-    //转义符号
-    QMap<QChar,QString> escapeChar = {
-        {'w',"word"}, // 转义匹配 数字+字母+下划线
-        {'a',"alpha"},// 转义匹配 字母
-        {'d',"digit"},// 转义匹配 数字
-        {'s',"space"},// 转义匹配 空白字符
-        {'n',"newline"},// 转义匹配 换行符
-        {'t',"tab"},// 转义匹配 制表符
-        {'r',"return"},// 转义匹配 回车
-        {'e',"empty"},// 转义匹配空串，辅助实现‘？’算符的零次或一次匹配
-
-        {'\\',"\\"},// 转义匹配保留符号
-        {'|',"|"},
-        {'.',"."},
-        {'*',"*"},
-        {'(',"("},
-        {')',")"}
-    };
+    static QSet<QChar> keptChar;// 保留符号
+    static QMap<QChar,QString> escapeChar;//转义符号
     /* ------------------------------------------------------------------- */
 
 
     /* -----------------------------表达式语法树---------------------------- */
-    regNode* root;// 指向正则表达式树的根节点
-    QVector<regNode*> nodes;// 将正则树上所有节点的指针保存到表中，方便遍历释放
+    //regNode* root;// 指向正则表达式树的根节点
+    QWeakPointer<regNode> root;
+    QVector<QSharedPointer<regNode>> nodes;// 将正则树上所有节点的指针保存到表中，方便遍历释放
     bool analyzed=false;
     /* ------------------------------------------------------------------- */
 
@@ -118,9 +101,9 @@ private:
 
 
     /* --------------------------表达式树构造方法--------------------------- */
-    regNode* parse_regExpr();//递归下降子程序 -> 处理非终结符regExpr
-    regNode* parse_subExpr();//递归下降子程序 -> 处理非终结符subExpr
-    regNode* parse_EscapeChar();//递归下降子程序 -> 处理非终结符escapeChar
+    QSharedPointer<regNode> parse_regExpr();//递归下降子程序 -> 处理非终结符regExpr
+    QSharedPointer<regNode> parse_subExpr();//递归下降子程序 -> 处理非终结符subExpr
+    QSharedPointer<regNode> parse_EscapeChar();//递归下降子程序 -> 处理非终结符escapeChar
 
     void getNextChar();// 从表达式串中获取下一个字符
     void putCharback();// 将当前字符退回输入流
@@ -131,27 +114,29 @@ private:
 
 public:
     regTree(const QString& _regExpr):regExpr(_regExpr){};
+    regTree(const regTree& other)=delete;
+    regTree(regTree&& other)
+    {
+        //移动语法树对象
+        root = other.root;
+        nodes=std::move(other.nodes);
+        regExpr=std::move(other.regExpr);
+
+        //设置两个对象的标志位
+        analyzed=other.analyzed;
+
+        other.analyzed = false;
+        other.signStack.clear();
+        other.currentChar=0;
+    }
 
     /**
      * @brief getRootNode 获得根节点指针
      * @return
      */
-    const regNode* getRootNode() const
+    const QWeakPointer<const regNode> getRootNode() const
     {
         return root;
-    }
-
-    /**
-     * @brief moveTree 将分析后的树结构所有权移出
-     * @return <树的根节点,所有节点指针的列表>
-     */
-    QPair<regNode*,QVector<regNode*>> moveTree()
-    {
-        auto tree = qMakePair(root,nodes);
-        root = nullptr;
-        nodes.clear();
-        analyzed=false;
-        return tree;
     }
 
     /**

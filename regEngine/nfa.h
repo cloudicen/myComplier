@@ -11,7 +11,7 @@ class nfa
 {
 private:
     /* ---------需要转换的正则语法树-------- */
-    const regNode* regTreeRoot;//语法树根节点
+    regTree tree;//语法树根节点
     /* --------------------------------- */
 
 
@@ -30,13 +30,13 @@ private:
 
 
     /* -----------nfa图构造方法------------ */
-    void Thompson(const regNode *subTree);// Thompson算法
+    void Thompson(const QWeakPointer<const regNode> &subTree);// Thompson算法
     void addEdge(int from, int to, QString info);// 添加一条边
     nfaNode* getNode(int num);// 获取一个节点，若不存在则创建
     /* ----------------------------------- */
 
 public:
-    nfa(regTree &tree):regTreeRoot(tree.getRootNode()){};
+    nfa(regTree &_tree):tree(std::move(_tree)){};
 
     /**
      * @brief getAllNodes 返回节点map的const引用

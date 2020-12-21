@@ -1,5 +1,24 @@
 ﻿#include "reg_tree.h"
 
+QSet<QChar> regTree::keptChar = {'|','.','\\','*','(',')'};// 保留符号
+
+QMap<QChar,QString> regTree::escapeChar = {
+        {'w',"word"}, // 转义匹配 数字+字母+下划线
+        {'a',"alpha"},// 转义匹配 字母
+        {'d',"digit"},// 转义匹配 数字
+        {'s',"space"},// 转义匹配 空白字符
+        {'n',"newline"},// 转义匹配 换行符
+        {'t',"tab"},// 转义匹配 制表符
+        {'r',"return"},// 转义匹配 回车
+        {'e',"empty"},// 转义匹配空串，辅助实现‘？’算符的零次或一次匹配
+
+        {'\\',"\\"},// 转义匹配保留符号
+        {'|',"|"},
+        {'.',"."},
+        {'*',"*"},
+        {'(',"("},
+        {')',")"}
+    };
 
 void regTree::getNextChar()
 {
@@ -55,7 +74,7 @@ bool regTree::matchSign(QChar ch)
     }
 }
 
-regNode *regTree::parse_regExpr()
+QSharedPointer<regNode> regTree::parse_regExpr()
 {
     qDebug() << "parse reg expression";
     getNextChar();
@@ -103,7 +122,7 @@ regNode *regTree::parse_regExpr()
     else if(currentChar.isPrint() && !keptChar.contains(currentChar))
     {
         qDebug() << "match char" << currentChar;
-        auto t = new regNode(Element,currentChar);
+        auto t = QSharedPointer<regNode>::create(Element,currentChar);
         nodes.push_back(t);
         auto p = parse_subExpr();
         auto cur = p;
@@ -125,7 +144,7 @@ regNode *regTree::parse_regExpr()
     }
 }
 
-regNode *regTree::parse_subExpr()
+QSharedPointer<regNode> regTree::parse_subExpr()
 {
     qDebug() << "parse sub expression";
     getNextChar();
@@ -133,7 +152,7 @@ regNode *regTree::parse_subExpr()
     {
         auto p = parse_regExpr();
         auto t = parse_subExpr();
-        auto a = new regNode(Alternate,"|",nullptr,p);
+        auto a = QSharedPointer<regNode>::create(Alternate,"|",nullptr,p);
         nodes.push_back(a);
         if(t != nullptr)
         {
@@ -146,7 +165,7 @@ regNode *regTree::parse_subExpr()
     {
         auto p = parse_regExpr();
         auto t = parse_subExpr();
-        auto a = new regNode(Concat,".",nullptr,p);
+        auto a = QSharedPointer<regNode>::create(Concat,".",nullptr,p);
         nodes.push_back(a);
         if(t != nullptr)
         {
@@ -157,7 +176,7 @@ regNode *regTree::parse_subExpr()
     else if(match('*'))
     {
         auto t = parse_subExpr();
-        auto p =new regNode(Closure,"*");
+        auto p = QSharedPointer<regNode>::create(Closure,"*");
         nodes.push_back(p);
         if(t != nullptr)
         {
@@ -173,7 +192,7 @@ regNode *regTree::parse_subExpr()
     }
 }
 
-regNode *regTree::parse_EscapeChar()
+QSharedPointer<regNode> regTree::parse_EscapeChar()
 {
     qDebug() << "parse escape char";
     getNextChar();
@@ -181,7 +200,7 @@ regNode *regTree::parse_EscapeChar()
     if(info != escapeChar.end())
     {
         qDebug() << "match escape char" << currentChar;
-        auto newNode = new regNode(Element,*info);
+        auto newNode = QSharedPointer<regNode>::create(Element,*info);
         nodes.push_back(newNode);
         return newNode;
     }

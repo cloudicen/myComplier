@@ -2,6 +2,8 @@
 #define DFA_GRAPH_H
 
 #include <QString>
+#include <QSharedPointer>
+#include <QMap>
 #include <QChar>
 #include <QSet>
 
@@ -41,6 +43,7 @@ public:
     QSet<int> closure;// 节点代表的nfa状态集
     bool accept=false;// 标识接受节点
     bool dead=false;
+    QMap<QChar,QSharedPointer<dfaEdge>> edge;
     dfaEdge *edges=nullptr;// 节点的边
     /* ------------------------------ */
     dfaNode(int _num = 0,const QSet<int>& _closure = QSet<int>()):num(_num),closure(_closure){};

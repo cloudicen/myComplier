@@ -2,7 +2,8 @@
 #define REG_NODE_H
 
 #include <QString>
-
+#include <QSharedPointer>
+#include <QWeakPointer>
 /**
  * @brief The regNodeType enum
  * 这里对应thompson算法中的几个规则
@@ -31,11 +32,11 @@ struct regNode
      */
     QString info;
 
-    regNode *children[2];//子节点，正则语法树是一个二叉树，故有两个子节点
+    QWeakPointer<regNode> children[2];//子节点，正则语法树是一个二叉树，故有两个子节点
     /* -------------------------------- */
 
-    regNode(regNodeType _type,QString _info,regNode *_leftChild=nullptr,regNode *_rightChild=nullptr):
-        type(_type),info(_info),children{_leftChild,_rightChild}{};
+    regNode(regNodeType _type,QString _info,QSharedPointer<regNode> leftChild=QSharedPointer<regNode>(),QSharedPointer<regNode> rightChild=QSharedPointer<regNode>()):
+        type(_type),info(_info),children{leftChild,rightChild}{};
 
     /**
      * @brief isLeaf 当前节点是否是叶子节点
@@ -43,7 +44,7 @@ struct regNode
      */
     bool isLeaf() const
     {
-        return children[0]==nullptr && children[1]==nullptr;
+        return children[0].isNull() && children[1].isNull();
     }
 
     /**
