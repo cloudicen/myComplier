@@ -53,7 +53,7 @@ struct regNode
     QString toPrintable() const
     {
         QString str="[token = \'%1\'](type = %2)";
-        if(info.isEmpty() || info.at(0) == 0)
+        if(info.isEmpty())
         {
             str = str.arg("\x0");
         }

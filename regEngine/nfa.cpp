@@ -50,7 +50,14 @@ void nfa::Thompson(const regNode *subTree)
         qDebug() << "Parse Element Node";
         int from = nodeNumber++;
         int to = nodeNumber++;
-        addEdge(from, to, subTree->info);
+        if(subTree->info=="empty")//如果当前节点代表空串，则添加eps边
+        {
+           addEdge(from,to,nfaEdge::EPS);
+        }
+        else
+        {
+           addEdge(from, to, subTree->info);
+        }
         start = from;
         accept = to;
     }

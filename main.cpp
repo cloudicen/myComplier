@@ -6,7 +6,8 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
     qDebug() << QChar('}').isLetter();
-    regTree tree=regTree("(_|\\a).\\w*.\\d*");
+    regTree idtree=regTree("(_|\\a).\\w*.\\d*");
+    regTree tree=regTree("s.i.n.\\(.\\d*.(\\.|\\e).\\d*.\\)");
     //regTree tree("(a|b)*.a.b.b");
     //regTree tree("a|a.b.b|a*.b.b*");//形如这样的前缀冲突模式,其匹配规则就是从前向后依次匹配，前缀冲突的项就以排在前面的为准
     //如果表达式是[a.b.b|a*.b.b*]其无法匹配aabbb
@@ -30,7 +31,7 @@ int main(int argc, char *argv[])
        auto mdfaTest = mdfa(dfaTest);
        mdfaTest.parseMDFA();
        mdfaTest.print();
-       mdfaTest.testMDFA("__ 1aabb");
+       mdfaTest.testMDFA("sin(12..345)");
 
 
     }
