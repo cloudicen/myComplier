@@ -101,22 +101,40 @@ void nfa::testNFA(QString str)
     QSet<int> currentStates = getEPSclosure({start});
 
     qDebug() << "begin state" << currentStates;
-
+    int lastMatchPos=-1;
+    int pos=0;
     foreach(auto ch,str)
     {
         auto smove = getSMove(currentStates,ch);
         qDebug() << "smove(" << currentStates << ',' << ch << ')' << "=" << smove;
         currentStates = getEPSclosure(smove);
         qDebug() << "next states" << currentStates;
-        if(currentStates.isEmpty())
+        if(currentStates.contains(accept))
         {
+            lastMatchPos=pos;
+        }
+        if(currentStates.isEmpty())//对当前输入无状态转移边，直接结束循环
+        {
+            if(lastMatchPos != -1)
+            {
+                qDebug() << "nfa search process terminate with a match at pos:" << lastMatchPos;
+            }
+            else
+            {
+                qDebug() << "nfa search process terminate with no matches";
+            }
             break;
         }
+        pos++;
     }
 
     if(currentStates.contains(accept))
     {
-        qDebug() << "ACCEPT";
+        qDebug() << "ACCEPT" << "-> index:" << lastMatchPos << "(all accept)";
+    }
+    else if(lastMatchPos != -1)
+    {
+        qDebug() << "ACCEPT" << "-> index:" << lastMatchPos << "(partly accept)";
     }
     else
     {

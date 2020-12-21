@@ -47,7 +47,7 @@ public:
 
     void print();
 
-    bool match(const QString &str);
+    int match(const QString &str);
 };
 
 #endif // MDFA_H

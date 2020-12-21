@@ -6,6 +6,25 @@ QPair<QSet<int>, QSet<int> > mdfa::split(QSet<int> nodeGroup)
     {
         QSet<int> s1, s2;// 存储新的分组
         auto edges = dfaEdges.values(ch);
+        foreach(auto edge,edges)
+        {
+            auto from=edge->from->num;
+            auto to=edge->to->num;
+            if(nodeGroup.contains(from))
+            {
+                if(nodeGroup.contains(to))
+                {
+                    qDebug() << "CHECK EDGE:" << from << "----" << ch << "----->" << to << " => [current group]";
+                    s1.insert(from);
+                }
+                else
+                {
+                    qDebug() << "CHECK EDGE:" << from << "----" << ch << "----->" << to << " => [other group]";
+                    s2.insert(from);
+                }
+            }
+        }
+        /*
         foreach(auto node,nodeGroup)// 遍历组内节点
         {
             for(auto edge=dfaNodes.value(node)->edges;edge!=nullptr;edge=edge->next)// 遍历该节点的边
@@ -26,6 +45,7 @@ QPair<QSet<int>, QSet<int> > mdfa::split(QSet<int> nodeGroup)
                 }
             }
         }
+        */
         if (!s2.isEmpty() && !s1.isEmpty())//如果s1,s2均不空，则表明当前分组可以进一步细分，直接返回分组结果
         {
             qDebug() << nodeGroup << "can spilt to:" << s1 << s2;
@@ -103,19 +123,17 @@ void mdfa::parseMDFA()
         auto newNode = new dfaNode(currentNode,group);
         foreach(auto node,group)
         {
+            if(node == 0)
+            {
+                start = currentNode;
+            }
             if(dfaNodes.value(node)->isAccept())
             {
                 newNode->accept = true;
-                break;
             }
             else if(dfaNodes.value(node)->isDead())
             {
                 newNode->dead = true;
-            }
-            else if(node == 0)
-            {
-                start = currentNode;
-                break;
             }
         }
         nodes.insert(currentNode,newNode);
@@ -152,6 +170,8 @@ void mdfa::testMDFA(QString str)
 {
     auto node = nodes[start];
     bool hasEdge = false;
+    int lastMatchPos=-1;
+    int pos=0;
     foreach(QChar ch,str)
     {
         auto edge=node->edges;
@@ -167,13 +187,36 @@ void mdfa::testMDFA(QString str)
             }
             edge = edge->next;
         }
+        if(node->isAccept())
+        {
+            lastMatchPos=pos;
+        }
         if(node->isDead() || !hasEdge)//对当前输入无状态转移边，直接结束循环
         {
-            qDebug() << "mdfa process terminate.";
+            if(lastMatchPos != -1)
+            {
+                qDebug() << "mdfa search process terminate with a match at pos:" << lastMatchPos;
+            }
+            else
+            {
+                qDebug() << "mdfa search process terminate with no matches";
+            }
             break;
         }
+        pos++;
     }
-    qDebug() << (node->isAccept()&&hasEdge ? "ACCEPT" : "REJECT");
+    if(node->isAccept()&&hasEdge)
+    {
+        qDebug() << "ACCEPT" << "-> index:" << lastMatchPos << "(all accept)";
+    }
+    else if(lastMatchPos != -1)
+    {
+        qDebug() << "ACCEPT" << "-> index:" << lastMatchPos << "(partly accept)";
+    }
+    else
+    {
+        qDebug() << "REJECT";
+    }
 }
 
 void mdfa::print()
@@ -223,30 +266,36 @@ void mdfa::print()
     std::cout << "------------------------------------------------------\n";
 }
 
-bool mdfa::match(const QString &str)
+int mdfa::match(const QString &str)
 {
     auto node = nodes[start];
-    int index=0;
+    bool hasEdge = false;
+    int lastMatchPos=-1;
+    int pos=0;
     foreach(QChar ch,str)
     {
         auto edge=node->edges;
-        bool hasEdge=false;
+        hasEdge = false;
         while(edge != nullptr)
         {
             if(edge->accept(ch))
             {
                 node = edge->to;
-                hasEdge=true;
+                hasEdge = true;
                 break;
             }
             edge = edge->next;
         }
-        if(!hasEdge)//对当前输入无状态转移边，直接结束循环
+        if(node->isAccept())
+        {
+            lastMatchPos=pos;
+        }
+        if(node->isDead() || !hasEdge)//对当前输入无状态转移边，直接结束循环
         {
             break;
         }
-        index++;
+        pos++;
     }
-    return node->isAccept()&&index==str.length();
+    return lastMatchPos;
 }
 

@@ -17,8 +17,7 @@ void tocken::construct()
     macher = new mdfa(dfaGraph);
     macher->parseMDFA();
 }
-
-bool tocken::match(const QString & str)
+int tocken::match(const QString & str)
 {
     return macher->match(str);
 }
