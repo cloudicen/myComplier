@@ -6,7 +6,10 @@
 #define LOG_FILE_PATH "log.txt"
 
 //#define LOG_TO_FILE
-#define QT_NO_DEBUG
+//#define QT_NO_DEBUG
+#define NO_TIME_STAMP true
+#define NO_LINE_INFO true
+#define LOG_LEVEL -1
 
 #include <QtGlobal>
 #include <QMutex>
@@ -22,6 +25,11 @@ void outputMessage(QtMsgType type, const QMessageLogContext &context, const QStr
 {
     static QMutex mutex;
     QMutexLocker lock(&mutex);
+
+    if(LOG_LEVEL >= type)
+    {
+        return;
+    }
 
     QString text;
     switch(type)
@@ -57,15 +65,25 @@ void outputMessage(QtMsgType type, const QMessageLogContext &context, const QStr
 
     }
 
-    QString current_date_time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss ddd");
+    QString current_date_time = "";
 
-    QString current_date = QString("(%1)").arg(current_date_time);
+    QString current_date = "";
 
     QString message;
 
+    if(!NO_TIME_STAMP)
+    {
+        current_date_time = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss ddd");
+        current_date = QString("(%1)").arg(current_date_time);
+    }
+
 #ifndef QT_NO_DEBUG
-    QString context_info = QString("File:(%1) Line:(%2)").arg(QString(context.file),context.line);
-    message = QString("%1 %2 %3 %4").arg(text,msg,current_date,contex_info);
+    QString context_info = "";
+    if(!NO_LINE_INFO)
+    {
+        context_info = QString("File:(%1) Line:(%2)").arg(QString(context.file),context.line);
+    }
+    message = QString("%1 %2 %3 %4").arg(text,msg,current_date,context_info);
 #else
     message = QString("%1 %2 %3").arg(text,msg,current_date);
 #endif

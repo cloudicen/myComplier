@@ -22,21 +22,32 @@ private:
     QSharedPointer<QString> regExpr;
     QSharedPointer<dfaMatcher> matcher;
     QSharedPointer<std::function<QVariant(tocken*,std::initializer_list<QVariant>)>> func;
-    tockenType type;
 public:
+    tockenType type;
     QVariant val;
     QString info;
-    tocken(const QString &_regExpr,tockenType _type=EMPTY,std::function<QVariant(tocken*,std::initializer_list<QVariant>)> _func=nullptr,QVariant _val=0,const QString & _info=""):
+    tocken()=default;
+    tocken(const QString &_regExpr,tockenType _type,std::function<QVariant(tocken*,std::initializer_list<QVariant>)> _func,QVariant _val=0,const QString & _info=""):
         regExpr(QSharedPointer<QString>::create(_regExpr)),
         matcher(QSharedPointer<dfaMatcher>::create(*regExpr)),
         func(QSharedPointer<std::function<QVariant(tocken*,std::initializer_list<QVariant>)>>::create(_func)),
         type(_type),
         val(_val),
         info(_info){};
+
+    tocken(const QString &_regExpr,tockenType _type,QVariant _val=QVariant(),const QString & _info=""):
+        regExpr(QSharedPointer<QString>::create(_regExpr)),
+        matcher(QSharedPointer<dfaMatcher>::create(*regExpr)),
+        func(QSharedPointer<std::function<QVariant(tocken*,std::initializer_list<QVariant>)>>::create(nullptr)),
+        type(_type),
+        val(_val),
+        info(_info){};
+
     tocken(const tocken& other)
     {
         regExpr = other.regExpr;
         matcher = other.matcher;
+        info = other.info;
         type = other.type;
         val = other.val;
         func = other.func;

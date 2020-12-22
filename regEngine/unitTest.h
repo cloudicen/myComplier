@@ -6,8 +6,8 @@ namespace regEngine
 void test()
 {
     regTree idtree=regTree("(_|\\a).\\w*.\\d*");
-    regTree tree=regTree("(s.i.n.\\(.\\d*.(\\.|\\e).\\d*.\\))*");
-    QString testStr = "sin(12.34)sin(567.0)..";
+    regTree tree=regTree("a.(\\.|\\e).b*");
+    QString testStr = "a..bbbbbbbbbbbbbbbb";
     //regTree tree("(a|b)*.a.b.b");
     //regTree tree("a|a.b.b|a*.b.b*");//形如这样的前缀冲突模式,其匹配规则就是从前向后依次匹配，前缀冲突的项就以排在前面的为准
     //如果表达式是[a.b.b|a*.b.b*]其无法匹配aabbb
@@ -33,7 +33,7 @@ void test()
        mdfaTest.testMDFA(testStr);
 
        std::cout << testStr.toStdString() << '\n';
-       std::cout << std::setw(mdfaTest.match("sin(12.34)sin(567.0)..")+1) << std::right << '^' << "~~~~~";
+       std::cout << std::setw(mdfaTest.match(testStr)+1) << std::right << '^' << "~~~~~";
     }
     else
     {

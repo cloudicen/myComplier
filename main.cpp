@@ -4,6 +4,7 @@
 #include "lexer/scanner.h"
 #include "lexer/lexer.h"
 #include <functional>
+#include "regEngine/unitTest.h"
 
 int fn1();
 bool fn2(int);
@@ -12,8 +13,11 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
     qInstallMessageHandler(outputMessage);
-    QString testStr = "sin(12.34)sin(567.0)sin(88882222.05)FUCK!!!!!!";
-    tocken TEST("(s.i.n.\\(.\\d*.(\\.|\\e).\\d*.\\))*");
+    //regEngine::test();
+
+    QString testStr = "sin(1234)sin(5670)sin(8888222205)FUCK!!!!!!";
+    tocken TEST("(s.i.n.\\(.\\d*.(\\.|\\e).\\d*.\\))*",tockenType::EMPTY);
+
     std::cout << testStr.toStdString() << '\n';
     std::cout << std::setw(TEST.match(testStr)) << " " << std::right << '^' << "~~~~~\n";
     tocken tocken2(TEST);

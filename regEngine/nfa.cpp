@@ -8,17 +8,26 @@ void nfa::Thompson(const QWeakPointer<const regNode> &subTree)
         auto op = treeRef->type;
         if(op == Alternate)
         {
+            int from=0;
+            if(fromConcat)
+            {
+                from = accept;
+                fromConcat = false;
+            }
+            else
+            {
+                from = nodeNumber++;
+            }
+            int to = nodeNumber++;
             qDebug() << "Parse Alternate Node";
             Thompson(treeRef->children[0]);
             int start1 = start;
             int accept1 = accept;
-            Thompson(treeRef->children[0]);
+            Thompson(treeRef->children[1]);
             int start2 = start;
             int accept2 = accept;
-            int from = nodeNumber++;
             addEdge(from, start1, nfaEdge::EPS);
             addEdge(from, start2, nfaEdge::EPS);
-            int to = nodeNumber++;
             addEdge(accept1, to, nfaEdge::EPS);
             addEdge(accept2, to, nfaEdge::EPS);
             start = from;
@@ -28,8 +37,8 @@ void nfa::Thompson(const QWeakPointer<const regNode> &subTree)
         {
             qDebug() << "Parse Concat Node";
             Thompson(treeRef->children[0]);
+            fromConcat = true;
             int oldStart = start;
-            nodeNumber--;
             //int oldAccept = accept;
             Thompson(treeRef->children[1]);
             //addEdge(oldAccept, start, nfaEdge::EPS);
@@ -38,11 +47,20 @@ void nfa::Thompson(const QWeakPointer<const regNode> &subTree)
         else if(op == Closure)
         {
             qDebug() << "Parse Closure Node";
-            int from = nodeNumber++;
+            int from=0;
+            if(fromConcat)
+            {
+                from = accept;
+                fromConcat = false;
+            }
+            else
+            {
+                from = nodeNumber++;
+            }
+            int to = nodeNumber++;
             Thompson(treeRef->children[0]);
             addEdge(accept, start, nfaEdge::EPS);
             addEdge(from, start, nfaEdge::EPS);
-            int to = nodeNumber++;
             addEdge(from, to, nfaEdge::EPS);
             addEdge(accept, to, nfaEdge::EPS);
             start = from;
@@ -51,7 +69,16 @@ void nfa::Thompson(const QWeakPointer<const regNode> &subTree)
         else if(op ==Element)
         {
             qDebug() << "Parse Element Node";
-            int from = nodeNumber++;
+            int from=0;
+            if(fromConcat)
+            {
+                from = accept;
+                fromConcat = false;
+            }
+            else
+            {
+                from = nodeNumber++;
+            }
             int to = nodeNumber++;
             if(treeRef->info=="empty")//如果当前节点代表空串，则添加eps边
             {
