@@ -2,6 +2,8 @@
 #define TOCKEN_H
 
 #include "dfamatcher.h"
+#include "QJsonDocument"
+#include "QJsonObject"
 #include "QVariant"
 
 enum tockenType{
@@ -22,34 +24,37 @@ private:
     QSharedPointer<QString> regExpr;
     QSharedPointer<dfaMatcher> matcher;
     QSharedPointer<std::function<QVariant(tocken*,std::initializer_list<QVariant>)>> func;
+    void castType();
 public:
     tockenType type;
-    QVariant val;
-    QString info;
+    QJsonObject property;
     tocken()=default;
-    tocken(const QString &_regExpr,tockenType _type,std::function<QVariant(tocken*,std::initializer_list<QVariant>)> _func,QVariant _val=0,const QString & _info=""):
+    tocken(const QString &_regExpr,tockenType _type,std::function<QVariant(tocken*,std::initializer_list<QVariant>)> _func,QJsonObject _property=QJsonObject(),const QString & _info=""):
         regExpr(QSharedPointer<QString>::create(_regExpr)),
         matcher(QSharedPointer<dfaMatcher>::create(*regExpr)),
         func(QSharedPointer<std::function<QVariant(tocken*,std::initializer_list<QVariant>)>>::create(_func)),
         type(_type),
-        val(_val),
-        info(_info){};
+        property(_property){
+        property["discription"] = _info;
+        castType();
+    };
 
-    tocken(const QString &_regExpr,tockenType _type,QVariant _val=QVariant(),const QString & _info=""):
+    tocken(const QString &_regExpr,tockenType _type,QJsonObject _property=QJsonObject(),const QString & _info=""):
         regExpr(QSharedPointer<QString>::create(_regExpr)),
         matcher(QSharedPointer<dfaMatcher>::create(*regExpr)),
         func(QSharedPointer<std::function<QVariant(tocken*,std::initializer_list<QVariant>)>>::create(nullptr)),
         type(_type),
-        val(_val),
-        info(_info){};
+        property(_property){
+        property["discription"] = _info;
+        castType();
+    };
 
     tocken(const tocken& other)
     {
         regExpr = other.regExpr;
         matcher = other.matcher;
-        info = other.info;
+        property = other.property;
         type = other.type;
-        val = other.val;
         func = other.func;
     }
 
@@ -67,38 +72,8 @@ public:
 
     QString toPrintable()
     {
-        QString str="type:%1 info:%2";
-        switch (type)
-        {
-        case FUNC:
-            str = str.arg("FUNC");
-            break;
-        case KEYWORD:
-            str = str.arg("KEYWORD");
-            break;
-        case OP:
-            str = str.arg("OP");
-            break;
-        case MARK:
-            str = str.arg("MARK");
-            break;
-        case END:
-            str = str.arg("END");
-            break;
-        case EMPTY:
-            str = str.arg("EMPTY");
-            break;
-        case NUMBER:
-            str = str.arg("NUMBER");
-            break;
-        case CONST_ID:
-            str = str.arg("CONST_ID");
-            break;
-        case SYMBOL:
-            str = str.arg("SYMBOL");
-
-        }
-        return str.arg(info);
+        QString str="properties:\n";
+        return str.append(QJsonDocument(property).toJson());
     }
 };
 

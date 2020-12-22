@@ -9,7 +9,7 @@
 //#define QT_NO_DEBUG
 #define NO_TIME_STAMP true
 #define NO_LINE_INFO true
-#define LOG_LEVEL -1
+#define LOG_LEVEL 0
 
 #include <QtGlobal>
 #include <QMutex>
