@@ -28,6 +28,10 @@ public:
             startNode = nodes[mdfaGrah.getStartNode()];
             //qDebug() << mdfaGrah.match("12345");
         }
+        else
+        {
+            qWarning() << "reg syntax error";
+        }
     };
     dfaMatcher(const dfaMatcher&)=delete;
     dfaMatcher(dfaMatcher&&other)
