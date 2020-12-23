@@ -29,6 +29,15 @@
 
 class parser
 {
+private:
+    QList<tocken> tockens;
+    QVector<tocken> tockenPairStack;
+    QList<tocken>::iterator currentTocken;
+
+    void getNextTocken();// 从表达式串中获取下一个tocken
+    void putTockenback();// 将当前tocken退回输入流
+    bool match(const tocken& _tocken);// 匹配当前tocken
+    bool matchPair(const tocken& _tocken);// 匹配成对出现的tocken
 public:
     parser();
 };
