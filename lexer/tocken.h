@@ -29,25 +29,37 @@ public:
     tockenType type;
     QJsonObject property;
     tocken()=default;
-    tocken(const QString &_regExpr,tockenType _type,std::function<QVariant(tocken*,std::initializer_list<QVariant>)> _func,QJsonObject _property=QJsonObject(),const QString & _info=""):
+    tocken(const QString &_regExpr,tockenType _type,std::function<QVariant(tocken*,std::initializer_list<QVariant>)> _func,QJsonObject _property=QJsonObject(),const QString & str="",const QString & info=""):
         regExpr(QSharedPointer<QString>::create(_regExpr)),
         matcher(QSharedPointer<dfaMatcher>::create(*regExpr)),
         func(QSharedPointer<std::function<QVariant(tocken*,std::initializer_list<QVariant>)>>::create(_func)),
         type(_type),
         property(_property){
-        property["discription"] = _info;
+        property["string"] = str;
+        property["discription"] = info;
         castType();
     };
 
-    tocken(const QString &_regExpr,tockenType _type,QJsonObject _property=QJsonObject(),const QString & _info=""):
+    tocken(const QString &_regExpr,tockenType _type,QJsonObject _property=QJsonObject(),const QString & str="",const QString & info=""):
         regExpr(QSharedPointer<QString>::create(_regExpr)),
         matcher(QSharedPointer<dfaMatcher>::create(*regExpr)),
         func(QSharedPointer<std::function<QVariant(tocken*,std::initializer_list<QVariant>)>>::create(nullptr)),
         type(_type),
         property(_property){
-        property["discription"] = _info;
+        property["string"] = str;
+        property["discription"] = info;
         castType();
     };
+
+    tocken(const tocken& other,const QString& str)
+    {
+        regExpr = other.regExpr;
+        matcher = other.matcher;
+        property = other.property;
+        type = other.type;
+        func = other.func;
+        property["string"] = str;
+    }
 
     tocken(const tocken& other)
     {
@@ -56,6 +68,33 @@ public:
         property = other.property;
         type = other.type;
         func = other.func;
+    }
+
+    tocken(tocken&& other)
+    {
+        regExpr = std::move(other.regExpr);
+        matcher = other.matcher;
+        func = other.func;
+        property = std::move(other.property);
+        type = other.type;
+
+        other.matcher.clear();
+        other.func.clear();
+    }
+
+    tocken operator=(const tocken& other)
+    {
+        regExpr = other.regExpr;
+        matcher = other.matcher;
+        property = other.property;
+        type = other.type;
+        func = other.func;
+        return *this;
+    }
+
+    bool operator==(const tocken& other)
+    {
+        return this->type == other.type;
     }
 
     QVariant act(std::initializer_list<QVariant> args)

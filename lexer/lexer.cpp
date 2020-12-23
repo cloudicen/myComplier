@@ -4,7 +4,9 @@
 std::once_flag lexer::init;
 QList<QPair<QString,tocken>> lexer::tockenList;
 QSet<QString> lexer::keptWords={
-    "PI","E","ORIGIN","SCALE","ROT","IS","FOR","FROM","TO","STEP","DRAW","DEF"
+    "PI","E",
+    "SIN","COS","TAN","LN","EXP","SQRT",
+    "ORIGIN","SCALE","ROT","IS","FOR","FROM","TO","STEP","DRAW","DEF"
 };
 
 lexer::lexer()
@@ -34,61 +36,62 @@ lexer::lexer()
                 _this->property["name"] = name;
             }
             return QVariant();
-        },QJsonObject(),"symbol")));
+        },QJsonObject(),"","a symbol to represent value")));
 
         //const id
-        tockenList.push_back(qMakePair<QString,tocken>("PI",tocken("P.I",tockenType::CONST_ID,QJsonObject({{"value",M_PI}}),"PI")));
-        tockenList.push_back(qMakePair<QString,tocken>("E",tocken("E",tockenType::CONST_ID,QJsonObject({{"value",M_PI}}),"E")));
+        tockenList.push_back(qMakePair<QString,tocken>("PI",tocken("P.I",tockenType::CONST_ID,QJsonObject({{"value",M_PI}}),"PI","Ratio of circumference to diameter")));
+        tockenList.push_back(qMakePair<QString,tocken>("E",tocken("E",tockenType::CONST_ID,QJsonObject({{"value",M_PI}}),"E","e")));
 
         //FUNC
         tockenList.push_back(qMakePair<QString,tocken>("SIN",tocken("S.I.N",tockenType::FUNC,[=](tocken* _this,std::initializer_list<QVariant> list)->QVariant{
             Q_UNUSED(_this);
             return QVariant(qSin(list.begin()->toDouble()));
-        },QJsonObject(),"calculate sin")));
+        },QJsonObject(),"SIN","calculate sin")));
         tockenList.push_back(qMakePair<QString,tocken>("COS",tocken("C.O.S",tockenType::FUNC,[=](tocken* _this,std::initializer_list<QVariant> list)->QVariant{
             Q_UNUSED(_this);
             return QVariant(qCos(list.begin()->toDouble()));
-        },QJsonObject(),"calculate cos")));
+        },QJsonObject(),"COS","calculate cos")));
         tockenList.push_back(qMakePair<QString,tocken>("TAN",tocken("T.A.N",tockenType::FUNC,[=](tocken* _this,std::initializer_list<QVariant> list)->QVariant{
             Q_UNUSED(_this);
             return QVariant(qTan(list.begin()->toDouble()));
-        },QJsonObject(),"calculate tan")));
+        },QJsonObject(),"TAN","calculate tan")));
         tockenList.push_back(qMakePair<QString,tocken>("LN",tocken("L.N",tockenType::FUNC,[=](tocken* _this,std::initializer_list<QVariant> list)->QVariant{
             Q_UNUSED(_this);
             return QVariant(qLn(list.begin()->toDouble()));
-        },QJsonObject(),"calculate ln")));
+        },QJsonObject(),"LN","calculate ln")));
         tockenList.push_back(qMakePair<QString,tocken>("EXP",tocken("E.X.P",tockenType::FUNC,[=](tocken* _this,std::initializer_list<QVariant> list)->QVariant{
             Q_UNUSED(_this);
             return QVariant(qExp(list.begin()->toDouble()));
-        },QJsonObject(),"calculate exp")));
+        },QJsonObject(),"EXP","calculate exp")));
         tockenList.push_back(qMakePair<QString,tocken>("SQRT",tocken("S.Q.R.T",tockenType::FUNC,[=](tocken* _this,std::initializer_list<QVariant> list)->QVariant{
             Q_UNUSED(_this);
             return QVariant(qSqrt(list.begin()->toDouble()));
-        },QJsonObject(),"calculate sqrt")));
+        },QJsonObject(),"SQRT","calculate sqrt")));
 
         //keyword
 
-        tockenList.push_back(qMakePair<QString,tocken>("ORIGIN",tocken("O.R.I.G.I.N",tockenType::KEYWORD,QJsonObject(),"set origin")));
-        tockenList.push_back(qMakePair<QString,tocken>("SCALE",tocken("S.C.A.L.E",tockenType::KEYWORD,QJsonObject(),"set scale")));
-        tockenList.push_back(qMakePair<QString,tocken>("ROT",tocken("R.O.T",tockenType::KEYWORD,QJsonObject(),"set rotation")));
-        tockenList.push_back(qMakePair<QString,tocken>("IS",tocken("I.S",tockenType::KEYWORD,QJsonObject(),"assign value")));
-        tockenList.push_back(qMakePair<QString,tocken>("FOR",tocken("F.O.R",tockenType::KEYWORD,QJsonObject(),"loop begin")));
-        tockenList.push_back(qMakePair<QString,tocken>("FROM",tocken("F.R.O.M",tockenType::KEYWORD,QJsonObject(),"range begin")));
-        tockenList.push_back(qMakePair<QString,tocken>("TO",tocken("T.O",tockenType::KEYWORD,QJsonObject(),"range end")));
-        tockenList.push_back(qMakePair<QString,tocken>("STEP",tocken("S.T.E.P",tockenType::KEYWORD,QJsonObject(),"set step")));
-        tockenList.push_back(qMakePair<QString,tocken>("DRAW",tocken("D.R.A.W",tockenType::KEYWORD,QJsonObject(),"start draw")));
-        tockenList.push_back(qMakePair<QString,tocken>("DEF",tocken("D.E.F",tockenType::KEYWORD,QJsonObject(),"define a symbol")));
+        tockenList.push_back(qMakePair<QString,tocken>("ORIGIN",tocken("O.R.I.G.I.N",tockenType::KEYWORD,QJsonObject(),"ORIGIN","set origin")));
+        tockenList.push_back(qMakePair<QString,tocken>("SCALE",tocken("S.C.A.L.E",tockenType::KEYWORD,QJsonObject(),"SCALE","set scale")));
+        tockenList.push_back(qMakePair<QString,tocken>("ROT",tocken("R.O.T",tockenType::KEYWORD,QJsonObject(),"ROT","set rotation")));
+        tockenList.push_back(qMakePair<QString,tocken>("IS",tocken("I.S",tockenType::KEYWORD,QJsonObject(),"IS","assign value")));
+        tockenList.push_back(qMakePair<QString,tocken>("FOR",tocken("F.O.R",tockenType::KEYWORD,QJsonObject(),"FOR","loop begin")));
+        tockenList.push_back(qMakePair<QString,tocken>("FROM",tocken("F.R.O.M",tockenType::KEYWORD,QJsonObject(),"FROM","range begin")));
+        tockenList.push_back(qMakePair<QString,tocken>("TO",tocken("T.O",tockenType::KEYWORD,QJsonObject(),"TO","range end")));
+        tockenList.push_back(qMakePair<QString,tocken>("STEP",tocken("S.T.E.P",tockenType::KEYWORD,QJsonObject(),"STEP","set step")));
+        tockenList.push_back(qMakePair<QString,tocken>("DRAW",tocken("D.R.A.W",tockenType::KEYWORD,QJsonObject(),"DRAW","start draw")));
+        tockenList.push_back(qMakePair<QString,tocken>("DEF",tocken("D.E.F",tockenType::KEYWORD,QJsonObject(),"DEF","define a symbol")));
 
         //op
-        tockenList.push_back(qMakePair<QString,tocken>("+",tocken("+",tockenType::OP,QJsonObject(),"plus")));
-        tockenList.push_back(qMakePair<QString,tocken>("-",tocken("-",tockenType::OP,QJsonObject(),"minus")));
-        tockenList.push_back(qMakePair<QString,tocken>("*",tocken("\\*",tockenType::OP,QJsonObject(),"multiply")));
-        tockenList.push_back(qMakePair<QString,tocken>("/",tocken("/",tockenType::OP,QJsonObject(),"devide")));
+        tockenList.push_back(qMakePair<QString,tocken>("+",tocken("+",tockenType::OP,QJsonObject(),"+","plus")));
+        tockenList.push_back(qMakePair<QString,tocken>("-",tocken("-",tockenType::OP,QJsonObject(),"-","minus")));
+        tockenList.push_back(qMakePair<QString,tocken>("*",tocken("\\*",tockenType::OP,QJsonObject(),"*","multiply")));
+        tockenList.push_back(qMakePair<QString,tocken>("/",tocken("/",tockenType::OP,QJsonObject(),"/","devide")));
+        tockenList.push_back(qMakePair<QString,tocken>("=",tocken("=",tockenType::OP,QJsonObject(),"=","equal")));
 
         //mark
-        tockenList.push_back(qMakePair<QString,tocken>("(",tocken("\\(",tockenType::MARK)));
-        tockenList.push_back(qMakePair<QString,tocken>(")",tocken("\\)",tockenType::MARK)));
-        tockenList.push_back(qMakePair<QString,tocken>(",",tocken(",",tockenType::MARK)));
+        tockenList.push_back(qMakePair<QString,tocken>("(",tocken("\\(",tockenType::MARK,QJsonObject(),"(")));
+        tockenList.push_back(qMakePair<QString,tocken>(")",tocken("\\)",tockenType::MARK,QJsonObject(),")")));
+        tockenList.push_back(qMakePair<QString,tocken>(",",tocken(",",tockenType::MARK,QJsonObject(),",")));
 
         //number
         tockenList.push_back(qMakePair<QString,tocken>("NUMBER",tocken("\\d.\\d*.(\\e|(\\..\\d.\\d*))",tockenType::NUMBER,[=](tocken* _this,std::initializer_list<QVariant> list) -> QVariant{
@@ -100,10 +103,10 @@ lexer::lexer()
                 }
             }
             qDebug() << "val of this number: " << _this->property["value"];
-            return QVariant(_this->property["value"]);},QJsonObject(),"number")));
+            return QVariant(_this->property["value"]);},QJsonObject(),"","a number val")));
 
         //END
-        tockenList.push_back(qMakePair<QString,tocken>(";",tocken(";",tockenType::END,QJsonObject(),"end of a sentence.")));
+        tockenList.push_back(qMakePair<QString,tocken>(";",tocken(";",tockenType::END,QJsonObject(),"","end of a sentence.")));
     });
 }
 
@@ -120,9 +123,10 @@ QList<tocken> lexer::parseTocken(QStringList sentences)
                 int pos = tockenClass.second.match(str);
                 if(pos != -1)
                 {
-                    auto to = tocken(tockenClass.second);
+                    auto currentString = str.mid(0,pos+1);
+                    auto to = tocken(tockenClass.second,currentString);
                     tockens.push_back(to);
-                    to.act({str.mid(0,pos+1)});
+                    to.act({currentString});
                     qInfo().noquote() << to.toPrintable();
                     str=str.mid(pos+1,-1);
                     qDebug() << "after turncate" << str;
