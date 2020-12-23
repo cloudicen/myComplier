@@ -12,11 +12,12 @@ class lexer
 {
 private:
     static std::once_flag init;
-    static QList<QPair<QString,tocken>> tockenList;
+public:
+    static QList<QPair<QString,QSharedPointer<tocken>>> tockenList;
     static QSet<QString> keptWords;
 public:
     lexer();
-    QList<tocken>parseTocken(QStringList sentences);
+    QList<QSharedPointer<tocken>>parseTocken(QStringList sentences);
 };
 
 #endif // LEXER_H

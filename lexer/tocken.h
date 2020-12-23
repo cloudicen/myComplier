@@ -18,12 +18,12 @@ enum tockenType{
     NUMBER
 };
 
-class tocken
+class tocken:public QEnableSharedFromThis<tocken>
 {
 private:
     QSharedPointer<QString> regExpr;
     QSharedPointer<dfaMatcher> matcher;
-    QSharedPointer<std::function<QVariant(tocken*,std::initializer_list<QVariant>)>> func;
+    QSharedPointer<std::function<QVariant(QSharedPointer<tocken>,std::initializer_list<QVariant>)>> func;
     void castType();
 public:
     tockenType type;
@@ -34,10 +34,10 @@ public:
         property["discription"] = "null tocken";
         castType();
     };
-    tocken(const QString &_regExpr,tockenType _type,std::function<QVariant(tocken*,std::initializer_list<QVariant>)> _func,QJsonObject _property=QJsonObject(),const QString & str="",const QString & info=""):
+    tocken(const QString &_regExpr,tockenType _type,std::function<QVariant(QSharedPointer<tocken>,std::initializer_list<QVariant>)> _func,QJsonObject _property=QJsonObject(),const QString & str="",const QString & info=""):
         regExpr(QSharedPointer<QString>::create(_regExpr)),
         matcher(QSharedPointer<dfaMatcher>::create(*regExpr)),
-        func(QSharedPointer<std::function<QVariant(tocken*,std::initializer_list<QVariant>)>>::create(_func)),
+        func(QSharedPointer<std::function<QVariant(QSharedPointer<tocken>,std::initializer_list<QVariant>)>>::create(_func)),
         type(_type),
         property(_property){
         property["string"] = str;
@@ -48,7 +48,7 @@ public:
     tocken(const QString &_regExpr,tockenType _type,QJsonObject _property=QJsonObject(),const QString & str="",const QString & info=""):
         regExpr(QSharedPointer<QString>::create(_regExpr)),
         matcher(QSharedPointer<dfaMatcher>::create(*regExpr)),
-        func(QSharedPointer<std::function<QVariant(tocken*,std::initializer_list<QVariant>)>>::create(nullptr)),
+        func(QSharedPointer<std::function<QVariant(QSharedPointer<tocken>,std::initializer_list<QVariant>)>>::create(nullptr)),
         type(_type),
         property(_property){
         property["string"] = str;
@@ -97,9 +97,31 @@ public:
         return *this;
     }
 
+    /**
+     * @brief operator ==判断两个tocken是否是同类tocken
+     * @param other
+     * @return
+     */
     bool operator==(const tocken& other)
     {
-        return this->type == other.type;
+        if(type == SYMBOL || type == NUMBER)
+        {
+            return this->type == other.type;
+        }
+        else
+        {
+            return isSame(other);
+        }
+    }
+
+    /**
+     * @brief isSame 判断两个tocken是否完全相同
+     * @param other
+     * @return
+     */
+    bool isSame(const tocken& other)
+    {
+        return this->type == other.type && this->property["string"]==other.property["string"];
     }
 
     QVariant act(std::initializer_list<QVariant> args)
@@ -107,7 +129,7 @@ public:
         QVariant ret;
         if(!func.isNull() && (*func))
         {
-            ret = (*func)(this,args);
+            ret = (*func)(sharedFromThis(),args);
         }
         return ret;
     }
