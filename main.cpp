@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
             str = scanner.readLine();
             sentence << scanner::scan(str);
         }
-        qInfo() << sentence;
+        //qInfo() << sentence;
         lexer().parseTocken(sentence);
     }
     return a.exec();

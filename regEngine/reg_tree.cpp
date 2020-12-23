@@ -217,7 +217,7 @@ QSharedPointer<regNode> regTree::parse_EscapeChar()
 bool regTree::analyze()
 {
     root = parse_regExpr();
-    if(pos != regExpr.length()-1)
+    if(pos != regExpr.length()-1 || root.isNull())
     {
         qDebug() << "syntax error, expected statment after position:" << pos;
         return false;

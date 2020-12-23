@@ -26,7 +26,7 @@ public:
             nodes = mdfaGrah.takeAllNodes();
             edges = mdfaGrah.takeAllEdges();
             startNode = nodes[mdfaGrah.getStartNode()];
-            //qDebug() << mdfaGrah.match("12345");
+            valid=true;
         }
         else
         {

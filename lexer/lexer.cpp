@@ -99,8 +99,11 @@ lexer::lexer()
                     _this->property["value"] = arg.toDouble();
                 }
             }
-            qInfo() << "val of this number: " << _this->property["value"];
+            qDebug() << "val of this number: " << _this->property["value"];
             return QVariant(_this->property["value"]);},QJsonObject(),"number")));
+
+        //END
+        tockenList.push_back(qMakePair<QString,tocken>(";",tocken(";",tockenType::END,QJsonObject(),"end of a sentence.")));
     });
 }
 
@@ -120,7 +123,7 @@ QList<tocken> lexer::parseTocken(QStringList sentences)
                     auto to = tocken(tockenClass.second);
                     tockens.push_back(to);
                     to.act({str.mid(0,pos+1)});
-                    qInfo() << to.toPrintable();
+                    qInfo().noquote() << to.toPrintable();
                     str=str.mid(pos+1,-1);
                     qDebug() << "after turncate" << str;
                     hasMatch = true;

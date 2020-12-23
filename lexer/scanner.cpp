@@ -24,7 +24,8 @@ QStringList scanner::scan(const QString &str)
     {
         QString sub;
         lineScan >> sub;
-        sentence << sub.split(';',Qt::SkipEmptyParts);
+        //sentence << sub.split(';',Qt::SkipEmptyParts);
+        sentence << sub;
     }
     return sentence;
 }

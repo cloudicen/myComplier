@@ -3,6 +3,10 @@
 int dfaMatcher::match(const QString &str)
 {
     auto node = startNode.toStrongRef();
+    if(!node)
+    {
+        return -1;
+    }
     bool hasEdge = false;
     int lastMatchPos=-1;
     int pos=0;
