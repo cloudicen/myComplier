@@ -28,7 +28,12 @@ private:
 public:
     tockenType type;
     QJsonObject property;
-    tocken()=default;
+    tocken():regExpr(nullptr),matcher(nullptr),func(nullptr),type(EMPTY)
+    {
+        property["string"] = "";
+        property["discription"] = "null tocken";
+        castType();
+    };
     tocken(const QString &_regExpr,tockenType _type,std::function<QVariant(tocken*,std::initializer_list<QVariant>)> _func,QJsonObject _property=QJsonObject(),const QString & str="",const QString & info=""):
         regExpr(QSharedPointer<QString>::create(_regExpr)),
         matcher(QSharedPointer<dfaMatcher>::create(*regExpr)),
