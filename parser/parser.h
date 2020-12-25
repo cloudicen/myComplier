@@ -1,45 +1,78 @@
 ﻿#ifndef PARSER_H
 #define PARSER_H
 #include "../lexer/tocken.h"
+#include "parseelement.h"
 
 /*
- * command -> sentence ;
- * sentence -> KEYWORD
- * sentence -> setOrigin
+ * sentence -> command ; sentence
+ *          -> EMPTY
+ *
+ * command  -> setOrigin
  *          -> setRotation
  *          -> forDraw
  *          -> defineSymbol
- *          -> assinValue
- * setOrigin -> ORIGIN VAL
- * setRotation -> ROT VAL
- * forDraw -> FOR VAL TO VAL STEP VAL DRAW
- * defineSymbol -> DEF SYMBOL
- *              -> DEF SYMBOL = VAL
- *              -> DEF SYMBOL IS VAL
+ *          -> assignValue
  *
- * assinValue -> SYMBOL = VAL
- *            -> SYMBOL IS VAL
- * VAL -> FUNC(VAL)
- *     -> (VAL,VAL)
- *     -> NUMBER
- *     -> SYMBOL
- *     -> CONST_ID
+ * setOrigin -> ORIGIN IS COORDINATE
+ *
+ * setRotation -> ROT IS SINGLEVAL
+ *
+ * forDraw -> FOR SIMBOL FROM SINGLEVAL TO SINGLEVAL STEP SINGLEVAL DRAW COORDINATE
+ *
+ * defineSymbol -> DEF SYMBOL           ------> defineSymbol -> DEF SYMBOL assign1
+ *              -> DEF SYMBOL = VAL             assign1 -> =VAL
+ *              -> DEF SYMBOL IS VAL                    -> IS VAL
+ *                                                      -> EMPTY
+ *
+ * assignValue -> SYMBOL = VAL          ------> assignValue -> SYMBOL assign
+ *            -> SYMBOL IS VAL                  assign  -> =VAL
+ *                                                      -> IS VAL
+ * VAL -> SINGLEVAL
+ *     -> COORDINATE
+ *
+ * SINGLEVAL -> EXPR       =======>  SINGLEVAL -> CONST_ID EXPR'
+ *           -> CONST_ID                       -> SYMBOL EXPR'
+ *           -> SYMBOL                         -> NUMBER EXPR'
+ *           -> NUMBER                         -> FUNC(VAL) EXPR'
+ *           -> FUNC(VAL)                      -> (SINGLEVAL)
+ *           -> (SINGLEVAL)
+ *
+ * COORDINATE -> (SINGLEVAL,SINGLEVAL)
+ *
+ * EXPR -> SINGLEVAL+SINGLEVAL
+ *      -> SINGLEVAL-SINGLEVAL
+ *      -> SINGLEVAL*SINGLEVAL
+ *      -> SINGLEVAL/SINGLEVAL
+ *      -> SINGLEVAL==SINGLEVAL
+ *
+ * EXPR' -> +SINGLEVAL
+ *       -> -SINGLEVAL
+ *       -> *SINGLEVAL
+ *       -> /SINGLEVAL
+ *       -> ==SINGLEVAL
+ *       -> EMPTY
+ *
+ * FUNC -> SIN|COS|TAN|LN|EXP|SQRT
  */
 
 
 class parser
 {
 private:
-    QList<tocken> tockens;
-    QVector<tocken> tockenPairStack;
-    QList<tocken>::iterator currentTocken;
+    QVector<QSharedPointer<tocken>> ruleTable;// 驱动规则表
 
-    void getNextTocken();// 从表达式串中获取下一个tocken
-    void putTockenback();// 将当前tocken退回输入流
-    bool match(const tocken& _tocken);// 匹配当前tocken
-    bool matchPair(const tocken& _tocken);// 匹配成对出现的tocken
+    QList<QSharedPointer<tocken>> tockens;//输入tocken列表
+
+    int index=-1;
+    QSharedPointer<tocken> currentTocken;//当前tocken
+
+    QStack<QSharedPointer<tocken>> matchStack;//符号栈
+
+    void getNextTocken();
+    void putTockenback();
 public:
-    parser();
+    parser(QList<QSharedPointer<tocken>> _tockens);
+    bool analyze();//表驱动分析
 };
 
 #endif // PARSER_H

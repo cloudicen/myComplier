@@ -4,8 +4,8 @@
 #include <QList>
 #include <QMap>
 #include <mutex>
+#include "tockensDefine.h"
 #include "tocken.h"
-
 
 
 class lexer
@@ -13,11 +13,16 @@ class lexer
 private:
     static std::once_flag init;
 public:
-    static QList<QPair<QString,QSharedPointer<tocken>>> tockenList;
-    static QSet<QString> keptWords;
+    static QSharedPointer<tockenDefine> defination;
 public:
-    lexer();
+    lexer(QSharedPointer<tockenDefine> define);
+
     QList<QSharedPointer<tocken>>parseTocken(QStringList sentences);
+
+    static QSharedPointer<tocken>getOriginTocken(const QString& TockeName)
+    {
+        return defination->getOriginTocken(TockeName);
+    };
 };
 
 #endif // LEXER_H

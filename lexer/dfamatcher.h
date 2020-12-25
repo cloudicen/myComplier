@@ -8,7 +8,7 @@ class dfaMatcher
 private:
     QWeakPointer<dfaNode> startNode;
     QMap<int,QSharedPointer<dfaNode>> nodes;
-    QMultiMap<QChar,QSharedPointer<dfaEdge>> edges; // 把所有非EPS边存储为一个multimap, 根据边上的字符来索引边的指针
+    QMultiMap<QChar,QSharedPointer<dfaEdge>> edges;
     bool valid=false;
 public:
     dfaMatcher()=default;

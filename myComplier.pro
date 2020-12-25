@@ -10,9 +10,11 @@ CONFIG -= app_bundle
 SOURCES += \
         lexer/dfamatcher.cpp \
         lexer/lexer.cpp \
+        lexer/mytockens.cpp \
         lexer/scanner.cpp \
         lexer/tocken.cpp \
         main.cpp \
+        parser/parseelement.cpp \
         parser/parser.cpp \
         regEngine/dfa.cpp \
         regEngine/mdfa.cpp \
@@ -27,9 +29,12 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     lexer/dfamatcher.h \
     lexer/lexer.h \
+    lexer/mytockens.h \
     lexer/scanner.h \
     lexer/tocken.h \
+    lexer/tockensDefine.h \
     logger.h \
+    parser/parseelement.h \
     parser/parser.h \
     regEngine/dfa.h \
     regEngine/dfa_graph.h \
