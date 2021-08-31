@@ -8,7 +8,7 @@
 #include <string>
 #include <memory>
 #include <utility>
-#include <format>
+//#include <format>
 #include "../base/baseNode.h"
 
 namespace regEngine {
@@ -45,28 +45,38 @@ namespace regEngine {
 
         std::string toPrintable() override {
             using std::string;
-            string str = "[info= \'{}\'](type = {{}})";
+            //string str = "[info= \'{}\'](type = {{}})";
+            string str = "[info= \'";
             if (info.empty()) {
-                str = std::format(str, "empty_node");
+                //str = std::format(str, "empty_node");
+                str.append("empty_node");
             } else {
-                str = std::format(str, info);
+                //str = std::format(str, info);
+                str.append(info);
             }
+            str.append("\'](type = ");
             switch (type) {
                 case Element:
-                    str = std::format(str, "element");
+                    //str = std::format(str, "element");
+                    str.append("element");
                     break;
                 case Alternate:
-                    str = std::format(str, "alternate");
+                    //str = std::format(str, "alternate");
+                    str.append("alternate");
                     break;
                 case Concat:
-                    str = std::format(str, "concat");
+                    //str = std::format(str, "concat");
+                    str.append("concat");
                     break;
                 case Closure:
-                    str = std::format(str, "closure");
+                    //str = std::format(str, "closure");
+                    str.append("closure");
                     break;
                 default:
-                    str = std::format(str, "undefined");
+                    //str = std::format(str, "undefined");
+                    str.append("undefined");
             }
+            str.append(")");
             return str;
         }
     };

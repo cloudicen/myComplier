@@ -18,10 +18,9 @@
 
 class LoggerFactory {
 private:
-    static std::shared_ptr<log4cpp::Category> root;
     static std::once_flag config_load_flag;
 public:
-    static std::shared_ptr<logger> getLogger(std::string module);
+    static std::shared_ptr<logger> getLogger(std::string module,const std::string& loggerName = "");
 };
 
 

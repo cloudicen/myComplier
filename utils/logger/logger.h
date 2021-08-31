@@ -10,18 +10,23 @@
 #include <log4cpp/PropertyConfigurator.hh>
 #include <log4cpp/Priority.hh>
 #include <log4cpp/PatternLayout.hh>
-#include <format>
+#include <memory>
+//#include <format>
 
 class logger {
 private:
-    std::shared_ptr<log4cpp::Category> log4cppCategory;
+    log4cpp::Category &log4cppCategory;
     std::string moduleName = "";
 public:
-    logger(std::shared_ptr<log4cpp::Category> _logger, std::string _moduleName = "none") : log4cppCategory(_logger),
-                                                                                           moduleName(_moduleName) {};
+    logger(log4cpp::Category &_logger, std::string _moduleName = "none") : log4cppCategory(_logger),
+                                                                           moduleName(_moduleName) {};
+
     void debug(std::string msg);
+
     void info(std::string msg);
+
     void warn(std::string msg);
+
     void error(std::string msg);
 };
 
