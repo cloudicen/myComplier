@@ -5,6 +5,10 @@
 #ifndef MY_COMPILER_REGENGINEDEF_H
 #define MY_COMPILER_REGENGINEDEF_H
 
+#include <unordered_map>
+#include <unordered_set>
+#include <string>
+
 namespace regEngine {
 
     /* ---------------------------关键字定义------------------------------- */

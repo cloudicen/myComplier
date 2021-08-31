@@ -16,10 +16,10 @@
 class logger {
 private:
     log4cpp::Category &log4cppCategory;
-    std::string moduleName = "";
+    std::string moduleName;
 public:
-    logger(log4cpp::Category &_logger, std::string _moduleName = "none") : log4cppCategory(_logger),
-                                                                           moduleName(_moduleName) {};
+    explicit logger(log4cpp::Category &_logger,std::string _moduleName = "none") : log4cppCategory(_logger),
+                                                                           moduleName(std::move(_moduleName)) {};
 
     void debug(std::string msg);
 
