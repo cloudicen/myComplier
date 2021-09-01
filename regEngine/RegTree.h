@@ -10,6 +10,7 @@
 #include "logger/LoggerFactory.h"
 #include <cassert>
 #include <cctype>
+#include <functional>
 #include <stack>
 #include <stdexcept>
 #include <unordered_map>
@@ -41,8 +42,6 @@ private:
   void goNext();
 
   bool match(char ch);
-
-  bool matchRange(char ch, const std::unordered_set<char> &charRange);
 
   void matchPair_push(char ch);
 

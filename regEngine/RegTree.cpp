@@ -41,8 +41,7 @@ bool regEngine::RegTree::matchPair_match(char ch) {
 
 regEngine::RegNode *regEngine::RegTree::parseRegExpr() {
   LOGGER->debug("parseRegExpr: begin");
-  if (match('.') ||
-      (isprint(currentMatchChar) && !matchRange(currentMatchChar, keptChar))) {
+  if (match('.') || (isprint(currentMatchChar) && !keptCharSet.contains(currentMatchChar))) {
     LOGGER->debug("match: '" + std::string(&currentMatchChar) + "'");
     auto cur = new regEngine::RegNode(Element, std::string({currentMatchChar}));
     goNext();
@@ -135,7 +134,7 @@ regEngine::RegNode *regEngine::RegTree::parseSubExpr(RegNode *regExprNode) {
 
 regEngine::RegNode *regEngine::RegTree::parseEscapeChar() {
   LOGGER->debug("parseEscapeChar: begin\n");
-  if (matchRange(currentMatchChar, escapeChar)) {
+  if (escapeCharDef.contains(currentMatchChar)) {
     LOGGER->debug("match '" + std::string(&currentMatchChar) + "'");
     auto info = escapeCharDef.find(currentMatchChar)->second;
     goNext();
@@ -144,9 +143,4 @@ regEngine::RegNode *regEngine::RegTree::parseEscapeChar() {
     LOGGER->error("parseEscapeChar: match error\n");
     return nullptr;
   }
-}
-
-bool regEngine::RegTree::matchRange(char ch,
-                                    const std::unordered_set<char> &charRange) {
-  return charRange.count(ch) > 0;
 }
