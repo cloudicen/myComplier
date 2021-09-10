@@ -6,6 +6,7 @@
 #define MY_COMPILER_REGENGINEDEF_H
 
 #include <string>
+#include <functional>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -28,6 +29,10 @@ static std::unordered_map<char, std::string> escapeCharDef{
     {'|', "|"},       {'.', "."}, {'*', "*"},
     {'(', "("},       {')', ")"}};                            //转义符号
 static std::unordered_map<char, char> signInPair{{'(', ')'}}; // 成对出现的符号
+
+static std::unordered_map<std::string,std::function<bool(char)>> matchRules{
+        {"word",[](char ch){return false;}}
+};
 /* ------------------------------------------------------------------- */
 } // namespace regEngine
 
