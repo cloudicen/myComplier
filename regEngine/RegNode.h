@@ -9,7 +9,7 @@
 #include <memory>
 #include <utility>
 //#include <format>
-#include "../base/baseNode.h"
+#include "../base/Printable.h"
 
 namespace regEngine {
     enum regNodeType {
@@ -19,7 +19,7 @@ namespace regEngine {
         Closure, // '*'
     };
 
-    class RegNode : public baseNode {
+    class RegNode : public Printable {
     public:
         /* -------------节点属性------------- */
         regNodeType type;//类型
@@ -39,11 +39,11 @@ namespace regEngine {
         explicit RegNode(regNodeType _type = regNodeType::Element, const std::string& _info = "",
                          std::unique_ptr<RegNode> _leftChildNode = nullptr,
                          std::unique_ptr<RegNode> _rightChildNode = nullptr)
-                : baseNode(),
+                : Printable(),
                   type(_type), info(_info),
                   leftChildNode(std::move(_leftChildNode)), rightChildNode(std::move(_rightChildNode)) {};
 
-        std::string toPrintable() override {
+        std::string toPrintable() const override {
             using std::string;
             //string str = "[info= \'{}\'](type = {{}})";
             string str = "[info= \'";
