@@ -18,7 +18,7 @@ namespace regEngine {
         NFA(const std::string& regExpr):regTree(regExpr){};
         ~NFA() = default;
 
-        void constructGraph();
+        const NFA_Graph& constructGraph();
 
         int match(const std::string& str);
 

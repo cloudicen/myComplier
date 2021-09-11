@@ -4,13 +4,14 @@
 
 #include "NFA.h"
 
-void regEngine::NFA::constructGraph() {
+const regEngine::NFA_Graph& regEngine::NFA::constructGraph() {
     Thompson(const_cast<regEngine::RegNode *>(this->regTree.generateRegTree()));
     LOGGER->debug("NFA Graph:\n" + this->nfaGraph.toPrintable());
+    return this->nfaGraph;
 }
 
 void regEngine::NFA::Thompson(regEngine::RegNode *subTree) {
-    static nfaNode* curStartNode = this->nfaGraph.addNode(START);
+    static nfaNode* curStartNode = this->nfaGraph.addNode(NFA_START);
     if (subTree == nullptr) {
         return;
     }
@@ -32,7 +33,7 @@ void regEngine::NFA::Thompson(regEngine::RegNode *subTree) {
         curStartNode = newStartNode2;
         Thompson(subTree->rightChildNode.get());
 
-        auto newEndNode = this->nfaGraph.addNode(ACCEPT);
+        auto newEndNode = this->nfaGraph.addNode(NFA_ACCEPT);
         this->nfaGraph.addEdge(oldStartNode,newEndNode);
         this->nfaGraph.addEdge(curStartNode,newEndNode);
 
@@ -56,7 +57,7 @@ void regEngine::NFA::Thompson(regEngine::RegNode *subTree) {
         curStartNode = newStartNode;
         Thompson(subTree->leftChildNode.get());
 
-        auto newEndNode = this->nfaGraph.addNode(ACCEPT);
+        auto newEndNode = this->nfaGraph.addNode(NFA_ACCEPT);
 
         this->nfaGraph.addEdge(oldStartNode1,newEndNode);
         this->nfaGraph.addEdge(curStartNode,newEndNode);
@@ -66,7 +67,7 @@ void regEngine::NFA::Thompson(regEngine::RegNode *subTree) {
     else if(op == Element)
     {
         LOGGER->debug("Parse Element Node");
-        auto newStartNode = this->nfaGraph.addNode(ACCEPT);
+        auto newStartNode = this->nfaGraph.addNode(NFA_ACCEPT);
         this->nfaGraph.addEdge(curStartNode,newStartNode,subTree->info);
         curStartNode = newStartNode;
     }
@@ -96,7 +97,7 @@ int regEngine::NFA::match(const std::string &str) {
 
     std::stringstream printString;
     if (curMatchPos == str.size() && curState.contains(acceptNode)){
-        printString << "ACCEPT ALL.";
+        printString << "NFA_ACCEPT ALL.";
     } else {
         printString << "REJECT (last match char: " << curMatchChar() << ",pos: " << curMatchPos << ")";
     }
