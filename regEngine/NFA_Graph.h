@@ -9,6 +9,7 @@
 #include <memory>
 #include "RegEngineDef.h"
 #include <sstream>
+#include <stack>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -57,7 +58,7 @@ namespace regEngine {
     public:
         explicit nfaNode(int _number = -1) : number(_number) {};
 
-        std::unordered_set<const nfaNode *> getEpsClosure() const;
+        std::unordered_set<const nfaNode *> getEpsMove() const;
 
         std::unordered_set<const nfaNode *> getsMove(char ch) const;
 
@@ -89,30 +90,9 @@ namespace regEngine {
 
         const nfaNode *getAcceptNode() const;
 
-        std::string toPrintable() const override {
-            std::stringstream printString;
-            for (const auto &edge : edges) {
-                if (edge.second->fromNode->number == startNodeNumber) {
-                    printString << "(start)  ";
-                } else if (edge.second->fromNode->number == acceptNodeNumber) {
-                    printString << "(accept) ";
-                } else {
-                    printString << "(normal) ";
-                }
+        std::unordered_set<const nfaNode *> getEpsClosure(const std::unordered_set<const nfaNode *>&) const;
 
-                printString << edge.second->toPrintable();
-
-                if (edge.second->toNode->number == startNodeNumber) {
-                    printString << "  (start)";
-                } else if (edge.second->toNode->number == acceptNodeNumber) {
-                    printString << " (accept)";
-                } else {
-                    printString << " (normal)";
-                }
-                printString << "\n";
-            }
-            return printString.str();
-        }
+        std::string toPrintable() const override;
     };
 
 } // namespace regEngine

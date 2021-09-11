@@ -2,7 +2,7 @@
 #include "regEngine/RegTree.h"
 #include "regEngine/NFA_Graph.h"
 int main() {
-    std::string regExpr = "(a||b)*abb";
+    std::string regExpr = "(a|c|b)*abb";
 //    regEngine::RegTree tree(regExpr);
 //    tree.generateRegTree();
 ////    regEngine::NFA_Graph graph_nfa;
@@ -15,5 +15,7 @@ int main() {
 ////    printf("%s", graph_nfa.toPrintable().c_str());
     regEngine::NFA nfa(regExpr);
     nfa.constructGraph();
+    std::string matchString = "abacabb";
+    nfa.match(matchString);
     return 0;
 }

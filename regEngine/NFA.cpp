@@ -6,7 +6,7 @@
 
 void regEngine::NFA::constructGraph() {
     Thompson(const_cast<regEngine::RegNode *>(this->regTree.generateRegTree()));
-    printf("%s",this->nfaGraph.toPrintable().c_str());
+    LOGGER->debug("NFA Graph:\n" + this->nfaGraph.toPrintable());
 }
 
 void regEngine::NFA::Thompson(regEngine::RegNode *subTree) {
@@ -70,4 +70,41 @@ void regEngine::NFA::Thompson(regEngine::RegNode *subTree) {
         this->nfaGraph.addEdge(curStartNode,newStartNode,subTree->info);
         curStartNode = newStartNode;
     }
+}
+
+int regEngine::NFA::match(const std::string &str) {
+    int curMatchPos = 0;
+    auto curMatchChar = [&curMatchPos,&str](){return (curMatchPos < str.size() ? str.at(curMatchPos) : '#');};
+    auto beginNode = this->nfaGraph.getStartNode();
+
+    auto curState = this->nfaGraph.getEpsClosure({beginNode});
+
+    for(;curMatchPos < str.size();curMatchPos++) {
+        //get smove
+        std::unordered_set<const nfaNode *> sMove;
+        for (auto node : curState) {
+            auto smove = node->getsMove(curMatchChar());
+            sMove.insert(smove.begin(),smove.end());
+        }
+
+        //get nextState
+        curState = this->nfaGraph.getEpsClosure(sMove);
+
+        //no next state, break
+        if (curState.empty()) {
+            break;
+        }
+    }
+
+    auto acceptNode = this->nfaGraph.getAcceptNode();
+
+    std::stringstream printString;
+    if (curMatchPos == str.size() && curState.contains(acceptNode)){
+        printString << "ACCEPT ALL.";
+    } else {
+        printString << "REJECT (last match char: " << curMatchChar() << ",pos: " << curMatchPos << ")";
+    }
+    LOGGER->debug(printString.str());
+
+    return curMatchPos;
 }

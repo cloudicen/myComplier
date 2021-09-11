@@ -20,6 +20,8 @@ namespace regEngine {
 
         void constructGraph();
 
+        int match(const std::string& str);
+
     private:
         void Thompson(RegNode* subTree);
     };

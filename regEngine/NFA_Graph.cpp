@@ -17,22 +17,29 @@ std::string regEngine::nfaEdge::toPrintable() const {
 }
 
 bool regEngine::nfaEdge::accept(char ch) const {
-    return regEngine::matchRules[this->info](ch);
+    if (this->info.size() > 1) {
+        //rich match rule
+        return regEngine::matchRules[this->info](ch);
+    } else {
+        //single char match
+        return this->info.at(0) == ch;
+    }
 }
 
-std::unordered_set<const regEngine::nfaNode *> regEngine::nfaNode::getEpsClosure() const{
+std::unordered_set<const regEngine::nfaNode *> regEngine::nfaNode::getEpsMove() const {
     std::unordered_set<const nfaNode *> result;
+    result.insert(this);
     for (auto edge : epsEdges) {
         result.insert(edge->toNode);
     }
     return result;
 }
 
-std::unordered_set<const regEngine::nfaNode *> regEngine::nfaNode::getsMove(char ch) const{
+std::unordered_set<const regEngine::nfaNode *> regEngine::nfaNode::getsMove(char ch) const {
     std::unordered_set<const nfaNode *> result;
     for (auto edge : edges) {
         if (edge.second->accept(ch)) {
-        result.insert(edge.second->toNode);
+            result.insert(edge.second->toNode);
         }
     }
     return result;
@@ -45,7 +52,7 @@ std::string regEngine::nfaNode::toPrintable() const {
     return printString.str();
 }
 
-regEngine::nfaNode  *regEngine::NFA_Graph::addNode(NFA_NodeType type) {
+regEngine::nfaNode *regEngine::NFA_Graph::addNode(NFA_NodeType type) {
     nodeCount++;
     auto[pt, success] = this->nodes.emplace(std::make_pair(nodeCount, std::make_unique<nfaNode>(nodeCount)));
     if (type == START) {
@@ -60,23 +67,68 @@ regEngine::nfaEdge *regEngine::NFA_Graph::addEdge(regEngine::nfaNode *fromNode, 
     if (fromNode != nullptr && toNode != nullptr) {
         auto pt = this->edges.emplace(std::make_pair(info, std::make_unique<nfaEdge>(fromNode, toNode, info)));
         if (info == regEngine::nfaEdge::EPS) {
-            fromNode -> epsEdges.insert(pt->second.get());
+            fromNode->epsEdges.insert(pt->second.get());
         } else {
-            fromNode -> edges.insert(std::make_pair(info, pt->second.get()));
+            fromNode->edges.insert(std::make_pair(info, pt->second.get()));
         }
         return pt->second.get();
     }
     return nullptr;
 }
 
-const regEngine::nfaNode *regEngine::NFA_Graph::getNode(int number) const{
+const regEngine::nfaNode *regEngine::NFA_Graph::getNode(int number) const {
     return this->nodes.at(number).get();
 }
 
-const regEngine::nfaNode *regEngine::NFA_Graph::getStartNode() const{
+const regEngine::nfaNode *regEngine::NFA_Graph::getStartNode() const {
     return getNode(this->startNodeNumber);
 }
 
-const regEngine::nfaNode *regEngine::NFA_Graph::getAcceptNode() const{
+const regEngine::nfaNode *regEngine::NFA_Graph::getAcceptNode() const {
     return getNode(this->acceptNodeNumber);
+}
+
+std::unordered_set<const regEngine::nfaNode *> regEngine::NFA_Graph::getEpsClosure(const std::unordered_set<const regEngine::nfaNode *>& start) const {
+    auto closure = start;
+    for (auto node : start) {
+        std::stack<const nfaNode *> searchStack;
+        searchStack.push(node);
+        while (!searchStack.empty()) {
+            auto curNode = searchStack.top();
+            searchStack.pop();
+            auto epsMove = curNode->getEpsMove();
+            for (auto nodeToSearch : epsMove) {
+                if (!closure.contains(nodeToSearch)) {
+                    closure.insert(nodeToSearch);
+                    searchStack.push(nodeToSearch);
+                }
+            }
+        }
+    }
+    return closure;
+}
+
+std::string regEngine::NFA_Graph::toPrintable() const {
+    std::stringstream printString;
+    for (const auto &edge : edges) {
+        if (edge.second->fromNode->number == startNodeNumber) {
+            printString << "(start)  ";
+        } else if (edge.second->fromNode->number == acceptNodeNumber) {
+            printString << "(accept) ";
+        } else {
+            printString << "(normal) ";
+        }
+
+        printString << edge.second->toPrintable();
+
+        if (edge.second->toNode->number == startNodeNumber) {
+            printString << "  (start)";
+        } else if (edge.second->toNode->number == acceptNodeNumber) {
+            printString << " (accept)";
+        } else {
+            printString << " (normal)";
+        }
+        printString << "\n";
+    }
+    return printString.str();
 }
