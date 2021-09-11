@@ -30,6 +30,16 @@ static std::unordered_map<char, std::string> escapeCharDef{
     {'(', "("},       {')', ")"}};                            //转义符号
 static std::unordered_map<char, char> signInPair{{'(', ')'}}; // 成对出现的符号
 
+static std::unordered_map<std::string,std::string> info2TokenDef {
+        {"word","abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890_"},
+        {"alpha","abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"},
+        {"digit","1234567890"},
+        {"space"," \n\t\r"},
+        {"newline","\n"},
+        {"tab","\t"},
+        {"return","\r"},
+};
+
 static std::unordered_map<std::string,std::function<bool(char)>> matchRules{
         {"word",[](char ch){return false;}}
 };
