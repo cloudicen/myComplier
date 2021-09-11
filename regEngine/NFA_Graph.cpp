@@ -55,9 +55,9 @@ std::string regEngine::nfaNode::toPrintable() const {
 regEngine::nfaNode *regEngine::NFA_Graph::addNode(NFA_NodeType type) {
     nodeCount++;
     auto[pt, success] = this->nodes.emplace(std::make_pair(nodeCount, std::make_unique<nfaNode>(nodeCount)));
-    if (type == START) {
+    if (type == NFA_START) {
         startNodeNumber = nodeCount;
-    } else if (type == ACCEPT) {
+    } else if (type == NFA_ACCEPT) {
         acceptNodeNumber = nodeCount;
     }
     return pt->second.get();

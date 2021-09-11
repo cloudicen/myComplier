@@ -66,9 +66,9 @@ namespace regEngine {
     };
 
     enum NFA_NodeType {
-        START,
-        ACCEPT,
-        NORMAL
+        NFA_START,
+        NFA_ACCEPT,
+        NFA_NORMAL
     };
 
     class NFA_Graph : public Printable {
@@ -80,7 +80,7 @@ namespace regEngine {
         std::unordered_map<int, std::unique_ptr<nfaNode>> nodes;
 
     public:
-        nfaNode *addNode(NFA_NodeType type = NORMAL);
+        nfaNode *addNode(NFA_NodeType type = NFA_NORMAL);
 
         nfaEdge *addEdge(nfaNode *fromNode, nfaNode *toNode, const std::string &info = nfaEdge::EPS);
 
