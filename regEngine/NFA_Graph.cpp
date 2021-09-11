@@ -4,7 +4,7 @@
 
 #include "NFA_Graph.h"
 
-std::string regEngine::nfaEdge::EPS;
+const std::string regEngine::nfaEdge::EPS;
 
 std::string regEngine::nfaEdge::toPrintable() const {
     std::stringstream printString;
@@ -65,13 +65,15 @@ regEngine::nfaNode *regEngine::NFA_Graph::addNode(NFA_NodeType type) {
 
 regEngine::nfaEdge *regEngine::NFA_Graph::addEdge(regEngine::nfaNode *fromNode, regEngine::nfaNode *toNode, const std::string &info) {
     if (fromNode != nullptr && toNode != nullptr) {
-        auto pt = this->edges.emplace(std::make_pair(info, std::make_unique<nfaEdge>(fromNode, toNode, info)));
+        auto pt = new nfaEdge(fromNode, toNode, info);
         if (info == regEngine::nfaEdge::EPS) {
-            fromNode->epsEdges.insert(pt->second.get());
+            this->epsEdges.emplace(pt);
+            fromNode->epsEdges.insert(pt);
         } else {
-            fromNode->edges.insert(std::make_pair(info, pt->second.get()));
+            this->edges.emplace(pt);
+            fromNode->edges.insert(std::make_pair(info, pt));
         }
-        return pt->second.get();
+        return pt;
     }
     return nullptr;
 }
@@ -88,18 +90,18 @@ const regEngine::nfaNode *regEngine::NFA_Graph::getAcceptNode() const {
     return getNode(this->acceptNodeNumber);
 }
 
-std::unordered_set<const regEngine::nfaNode *> regEngine::NFA_Graph::getEpsClosure(std::unordered_set<const regEngine::nfaNode *>&& start) const {
+std::set<int> regEngine::NFA_Graph::getEpsClosure(std::set<int>&& start) const {
     auto closure = start;
     for (auto node : start) {
         std::stack<const nfaNode *> searchStack;
-        searchStack.push(node);
+        searchStack.push(getNode(node));
         while (!searchStack.empty()) {
             auto curNode = searchStack.top();
             searchStack.pop();
             auto epsMove = curNode->getEpsMove();
             for (auto nodeToSearch : epsMove) {
-                if (!closure.contains(nodeToSearch)) {
-                    closure.insert(nodeToSearch);
+                if (!closure.contains(nodeToSearch->number)) {
+                    closure.insert(nodeToSearch->number);
                     searchStack.push(nodeToSearch);
                 }
             }
@@ -108,11 +110,13 @@ std::unordered_set<const regEngine::nfaNode *> regEngine::NFA_Graph::getEpsClosu
     return closure;
 }
 
-std::unordered_set<const regEngine::nfaNode *> regEngine::NFA_Graph::getsMove(std::unordered_set<const nfaNode *> &&curState,char curMatchChar) const {
-    std::unordered_set<const nfaNode *> sMove;
-    for (auto node : curState) {
-        auto smove = node->getsMove(curMatchChar);
-        sMove.insert(smove.begin(),smove.end());
+std::set<int> regEngine::NFA_Graph::getsMove(std::set<int> &&curState,char curMatchChar) const {
+    std::set<int> sMove;
+    for (auto nodeNum : curState) {
+        auto smove = getNode(nodeNum)->getsMove(curMatchChar);
+        for (auto node : smove) {
+            sMove.insert(node->number);
+        }
     }
     return sMove;
 }
@@ -120,19 +124,39 @@ std::unordered_set<const regEngine::nfaNode *> regEngine::NFA_Graph::getsMove(st
 std::string regEngine::NFA_Graph::toPrintable() const {
     std::stringstream printString;
     for (const auto &edge : edges) {
-        if (edge.second->fromNode->number == startNodeNumber) {
+        if (edge->fromNode->number == startNodeNumber) {
             printString << "(start)  ";
-        } else if (edge.second->fromNode->number == acceptNodeNumber) {
+        } else if (edge->fromNode->number == acceptNodeNumber) {
             printString << "(accept) ";
         } else {
             printString << "(normal) ";
         }
 
-        printString << edge.second->toPrintable();
+        printString << edge->toPrintable();
 
-        if (edge.second->toNode->number == startNodeNumber) {
+        if (edge->toNode->number == startNodeNumber) {
             printString << "  (start)";
-        } else if (edge.second->toNode->number == acceptNodeNumber) {
+        } else if (edge->toNode->number == acceptNodeNumber) {
+            printString << " (accept)";
+        } else {
+            printString << " (normal)";
+        }
+        printString << "\n";
+    }
+    for (const auto &edge : epsEdges) {
+        if (edge->fromNode->number == startNodeNumber) {
+            printString << "(start)  ";
+        } else if (edge->fromNode->number == acceptNodeNumber) {
+            printString << "(accept) ";
+        } else {
+            printString << "(normal) ";
+        }
+
+        printString << edge->toPrintable();
+
+        if (edge->toNode->number == startNodeNumber) {
+            printString << "  (start)";
+        } else if (edge->toNode->number == acceptNodeNumber) {
             printString << " (accept)";
         } else {
             printString << " (normal)";
@@ -140,4 +164,12 @@ std::string regEngine::NFA_Graph::toPrintable() const {
         printString << "\n";
     }
     return printString.str();
+}
+
+std::set<const regEngine::nfaEdge *> regEngine::NFA_Graph::getAllEdges() const{
+    std::set<const nfaEdge *> result;
+    for (const auto & edge : this->edges) {
+        result.insert(edge.get());
+    }
+    return result;
 }

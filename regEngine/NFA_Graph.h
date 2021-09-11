@@ -12,6 +12,8 @@
 #include <stack>
 #include <unordered_map>
 #include <unordered_set>
+#include <set>
+#include <map>
 
 namespace regEngine {
 
@@ -21,11 +23,12 @@ namespace regEngine {
 
     class nfaEdge : public Printable {
     public:
-        static std::string EPS;
+        const static std::string EPS;
+        const std::string info;
     private:
         const nfaNode *fromNode;
         const nfaNode *toNode;
-        std::string info;
+
 
         /**
          * friend classes
@@ -44,9 +47,9 @@ namespace regEngine {
     };
 
     class nfaNode : public Printable {
-
+    public:
+        const int number;
     private:
-        int number;
         std::unordered_set<const nfaEdge *> epsEdges;
         std::unordered_multimap<std::string, const nfaEdge *> edges;
 
@@ -76,7 +79,8 @@ namespace regEngine {
         int nodeCount = 0;
         int startNodeNumber = 0;
         int acceptNodeNumber = 0;
-        std::unordered_multimap<std::string, std::unique_ptr<nfaEdge>> edges;
+        std::unordered_set<std::unique_ptr<nfaEdge>> edges;
+        std::unordered_set<std::unique_ptr<nfaEdge>> epsEdges;
         std::unordered_map<int, std::unique_ptr<nfaNode>> nodes;
 
     public:
@@ -84,15 +88,17 @@ namespace regEngine {
 
         nfaEdge *addEdge(nfaNode *fromNode, nfaNode *toNode, const std::string &info = nfaEdge::EPS);
 
+        std::set<const nfaEdge *> getAllEdges() const;
+
         const nfaNode *getNode(int number) const;
 
         const nfaNode *getStartNode() const;
 
         const nfaNode *getAcceptNode() const;
 
-        std::unordered_set<const nfaNode *> getEpsClosure(std::unordered_set<const nfaNode *> &&curState) const;
+        std::set<int> getEpsClosure(std::set<int> &&curState) const;
 
-        std::unordered_set<const nfaNode *> getsMove(std::unordered_set<const nfaNode *> &&curState, char curMatchChar) const;
+        std::set<int> getsMove(std::set<int> &&curState, char curMatchChar) const;
 
         std::string toPrintable() const override;
     };

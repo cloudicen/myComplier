@@ -78,7 +78,7 @@ int regEngine::NFA::match(const std::string &str) {
     auto curMatchChar = [&curMatchPos,&str](){return (curMatchPos < str.size() ? str.at(curMatchPos) : '#');};
     auto beginNode = this->nfaGraph.getStartNode();
 
-    auto curState = this->nfaGraph.getEpsClosure({beginNode});
+    auto curState = this->nfaGraph.getEpsClosure({beginNode->number});
 
     for(;curMatchPos < str.size();curMatchPos++) {
         //get smove
@@ -96,8 +96,8 @@ int regEngine::NFA::match(const std::string &str) {
     auto acceptNode = this->nfaGraph.getAcceptNode();
 
     std::stringstream printString;
-    if (curMatchPos == str.size() && curState.contains(acceptNode)){
-        printString << "NFA_ACCEPT ALL.";
+    if (curMatchPos == str.size() && curState.contains(acceptNode->number)){
+        printString << "ACCEPT ALL.";
     } else {
         printString << "REJECT (last match char: " << curMatchChar() << ",pos: " << curMatchPos << ")";
     }
