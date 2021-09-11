@@ -88,7 +88,7 @@ const regEngine::nfaNode *regEngine::NFA_Graph::getAcceptNode() const {
     return getNode(this->acceptNodeNumber);
 }
 
-std::unordered_set<const regEngine::nfaNode *> regEngine::NFA_Graph::getEpsClosure(const std::unordered_set<const regEngine::nfaNode *>& start) const {
+std::unordered_set<const regEngine::nfaNode *> regEngine::NFA_Graph::getEpsClosure(std::unordered_set<const regEngine::nfaNode *>&& start) const {
     auto closure = start;
     for (auto node : start) {
         std::stack<const nfaNode *> searchStack;
@@ -106,6 +106,15 @@ std::unordered_set<const regEngine::nfaNode *> regEngine::NFA_Graph::getEpsClosu
         }
     }
     return closure;
+}
+
+std::unordered_set<const regEngine::nfaNode *> regEngine::NFA_Graph::getsMove(std::unordered_set<const nfaNode *> &&curState,char curMatchChar) const {
+    std::unordered_set<const nfaNode *> sMove;
+    for (auto node : curState) {
+        auto smove = node->getsMove(curMatchChar);
+        sMove.insert(smove.begin(),smove.end());
+    }
+    return sMove;
 }
 
 std::string regEngine::NFA_Graph::toPrintable() const {

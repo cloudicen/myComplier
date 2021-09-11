@@ -90,7 +90,9 @@ namespace regEngine {
 
         const nfaNode *getAcceptNode() const;
 
-        std::unordered_set<const nfaNode *> getEpsClosure(const std::unordered_set<const nfaNode *>&) const;
+        std::unordered_set<const nfaNode *> getEpsClosure(std::unordered_set<const nfaNode *> &&curState) const;
+
+        std::unordered_set<const nfaNode *> getsMove(std::unordered_set<const nfaNode *> &&curState, char curMatchChar) const;
 
         std::string toPrintable() const override;
     };

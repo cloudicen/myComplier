@@ -81,14 +81,10 @@ int regEngine::NFA::match(const std::string &str) {
 
     for(;curMatchPos < str.size();curMatchPos++) {
         //get smove
-        std::unordered_set<const nfaNode *> sMove;
-        for (auto node : curState) {
-            auto smove = node->getsMove(curMatchChar());
-            sMove.insert(smove.begin(),smove.end());
-        }
+        auto sMove = this->nfaGraph.getsMove(std::move(curState),curMatchChar());
 
         //get nextState
-        curState = this->nfaGraph.getEpsClosure(sMove);
+        curState = this->nfaGraph.getEpsClosure(std::move(sMove));
 
         //no next state, break
         if (curState.empty()) {
