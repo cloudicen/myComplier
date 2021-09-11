@@ -8,12 +8,13 @@
 #include <string>
 
 /**
- * 所有节点类的基类
+ * 所有可打类型基类
  */
 class Printable {
 public:
-    virtual std::string toPrintable() const = 0;
+    Printable() = default;
     virtual ~Printable() = default;
+    virtual std::string toPrintable() const = 0;
 };
 
 
