@@ -9,6 +9,6 @@ include_directories(lib/log4cpp/include utils)
 
 link_directories(lib/log4cpp/lib)
 
-add_executable(my_compiler main.cpp regEngine/RegTree.cpp utils/logger/LoggerFactory.cpp utils/logger/LoggerFactory.h utils/logger/logger.cpp utils/logger/logger.h regEngine/NFA_Graph.cpp regEngine/NFA_Graph.h regEngine/NFA.cpp regEngine/NFA.h)
+add_executable(my_compiler main.cpp regEngine/RegTree.cpp utils/logger/LoggerFactory.cpp utils/logger/LoggerFactory.h utils/logger/logger.cpp utils/logger/logger.h regEngine/NFA_Graph.cpp regEngine/NFA_Graph.h regEngine/NFA.cpp regEngine/NFA.h regEngine/DFA_Graph.cpp regEngine/DFA_Graph.h regEngine/DFA.cpp regEngine/DFA.h)
 
 target_link_libraries(my_compiler log4cpp)
