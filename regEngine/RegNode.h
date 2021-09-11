@@ -10,6 +10,7 @@
 #include <utility>
 //#include <format>
 #include "../base/Printable.h"
+#include <sstream>
 
 namespace regEngine {
     enum regNodeType {
@@ -44,40 +45,40 @@ namespace regEngine {
                   leftChildNode(std::move(_leftChildNode)), rightChildNode(std::move(_rightChildNode)) {};
 
         std::string toPrintable() const override {
-            using std::string;
+            std::stringstream printString;
             //string str = "[info= \'{}\'](type = {{}})";
-            string str = "[info= \'";
+            printString << "[info= \'";
             if (info.empty()) {
                 //str = std::format(str, "empty_node");
-                str.append("empty_node");
+                printString << "empty_node";
             } else {
                 //str = std::format(str, info);
-                str.append(info);
+                printString << info;
             }
-            str.append("\'](type = ");
+            printString << "\'](type = ";
             switch (type) {
                 case Element:
                     //str = std::format(str, "element");
-                    str.append("element");
+                    printString << "element";
                     break;
                 case Alternate:
                     //str = std::format(str, "alternate");
-                    str.append("alternate");
+                    printString << "alternate";
                     break;
                 case Concat:
                     //str = std::format(str, "concat");
-                    str.append("concat");
+                    printString << "concat";
                     break;
                 case Closure:
                     //str = std::format(str, "closure");
-                    str.append("closure");
+                    printString <<  "closure";
                     break;
                 default:
                     //str = std::format(str, "undefined");
-                    str.append("undefined");
+                    printString << "undefined";
             }
-            str.append(")");
-            return str;
+            printString << ")";
+            return printString.str();
         }
     };
 }
