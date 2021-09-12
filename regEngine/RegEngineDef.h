@@ -41,7 +41,7 @@ static std::unordered_map<std::string,std::string> info2TokenDef {
 };
 
 static std::unordered_map<std::string,std::function<bool(char)>> matchRules{
-        {"word",[](char ch){return false;}}
+        {"word",[](char ch){return isalnum(ch) || ch == '_';}}
 };
 /* ------------------------------------------------------------------- */
 } // namespace regEngine

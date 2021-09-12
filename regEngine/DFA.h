@@ -22,7 +22,9 @@ namespace regEngine{
         explicit DFA(const std::string& regExpr):nfa(regExpr){};
         ~DFA() = default;
 
-        void constructGraph();
+        const DFA_Graph& constructGraph();
+
+        const DFA_Graph& minimizeGraph();
 
         int match(const std::string& str);
 
@@ -30,6 +32,10 @@ namespace regEngine{
         void genTokenSet(const NFA_Graph& graph);
 
         void subSetMethod(const NFA_Graph& graph);
+
+        void hopcroft();
+
+        std::pair<std::set<int>,std::set<int>> spilt(const std::set<int>&);
     };
 }
 

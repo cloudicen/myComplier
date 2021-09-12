@@ -31,7 +31,7 @@ regEngine::DFA_Node *regEngine::DFA_Graph::addNode(regEngine::DFA_NodeType type)
         return const_cast<regEngine::DFA_Node *>(getNode(0));
     }
     nodeCount++;
-    auto[pt, success] = this->nodes.emplace(std::make_pair(nodeCount, std::make_unique<DFA_Node>(nodeCount)));
+    auto[pt, success] = this->nodes.emplace(std::make_pair(nodeCount, std::make_unique<DFA_Node>(nodeCount,type)));
     if (type == DFA_START) {
         startNodeNumber = nodeCount;
     } else if (type == DFA_ACCEPT) {
@@ -48,6 +48,8 @@ regEngine::DFA_Edge *regEngine::DFA_Graph::addEdge(regEngine::DFA_Node *fromNode
     }
     return nullptr;
 }
+
+
 
 const regEngine::DFA_Node *regEngine::DFA_Graph::getNode(int number) const {
     return this->nodes.at(number).get();
@@ -89,7 +91,7 @@ std::string regEngine::DFA_Graph::toPrintable() const {
             printString << "  (start)";
         } else if (acceptNodeNumber.contains(edge->toNode->number)) {
             printString << " (accept)";
-        } else if (edge->fromNode->number == deadNodeNumber) {
+        } else if (edge->toNode->number == deadNodeNumber) {
             printString << "   (dead)";
         } else {
             printString << " (normal)";
@@ -97,4 +99,18 @@ std::string regEngine::DFA_Graph::toPrintable() const {
         printString << "\n";
     }
     return printString.str();
+}
+
+std::set<int> regEngine::DFA_Graph::getAllNodeNumber() const {
+    std::set<int> result;
+    for (auto i = 0; i <= nodeCount; i++) {
+        result.insert(i);
+    }
+    return result;
+}
+
+std::set<int> regEngine::DFA_Graph::getAcceptNodeNumber() const {
+    std::set<int> result;
+    result.insert(this->acceptNodeNumber.begin(), this->acceptNodeNumber.end());
+    return result;
 }

@@ -4,8 +4,8 @@
 #include "regEngine/NFA_Graph.h"
 
 int main() {
-    std::string regExpr = "(a|b)*abb";
-    std::string matchString = "abacabb";
+    std::string regExpr = "(\\w|b)*abb";
+    std::string matchString = "._1223341""abacabb";
 //    regEngine::RegTree tree(regExpr);
 //    tree.generateRegTree();
 //    regEngine::NFA_Graph graph_nfa;
@@ -21,5 +21,7 @@ int main() {
 //    nfa.match(matchString);
     regEngine::DFA dfa(regExpr);
     dfa.constructGraph();
+    dfa.minimizeGraph();
+    dfa.match(matchString);
     return 0;
 }
